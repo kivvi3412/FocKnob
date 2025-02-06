@@ -80,7 +80,7 @@ esp_err_t AS5600::_update_total_radian_and_velocity(float currentRadian) {
     return ESP_OK;
 }
 
-void AS5600::reset_relative_total_radian() {    // 重置相对的累计弧度，将当前总累计弧度作为新的偏移
+void AS5600::reset_custom_total_radian() {    // 重置相对的累计弧度，将当前总累计弧度作为新的偏移 (用户自定义
     relative_offset_radian_ = total_accumulated_radian_;
 }
 
@@ -92,7 +92,7 @@ float AS5600::get_total_radian() const {
     return total_accumulated_radian_;
 }
 
-float AS5600::get_relative_total_radian() const {
+float AS5600::get_custom_total_radian() const {
     return total_accumulated_radian_ - relative_offset_radian_;
 }
 

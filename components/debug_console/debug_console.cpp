@@ -9,11 +9,11 @@
 
 
 struct {
-    struct arg_dbl *parm1 = arg_dbln("a", "parm1", "<float>", 0, 1, "设置参数 parm1");
-    struct arg_dbl *parm2 = arg_dbln("b", "parm2", "<float>", 0, 1, "设置参数 parm2");
-    struct arg_dbl *parm3 = arg_dbln("c", "parm3", "<float>", 0, 1, "设置参数 parm3");
-    struct arg_dbl *parm4 = arg_dbln("d", "parm4", "<float>", 0, 1, "设置参数 parm4");
-    struct arg_dbl *parm5 = arg_dbln("e", "parm5", "<float>", 0, 1, "设置参数 parm5");
+    struct arg_dbl *parm1 = arg_dbln("m", "parm1", "<float>", 0, 1, "设置参数 parm1");
+    struct arg_dbl *parm2 = arg_dbln("q", "parm2", "<float>", 0, 1, "设置参数 parm2");
+    struct arg_dbl *parm3 = arg_dbln("p", "parm3", "<float>", 0, 1, "设置参数 parm3");
+    struct arg_dbl *parm4 = arg_dbln("i", "parm4", "<float>", 0, 1, "设置参数 parm4");
+    struct arg_dbl *parm5 = arg_dbln("d", "parm5", "<float>", 0, 1, "设置参数 parm5");
     struct arg_end *end = arg_end(20);
 } set_params_args;
 

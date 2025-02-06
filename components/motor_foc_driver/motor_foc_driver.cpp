@@ -81,8 +81,6 @@ void FocDriver::foc_motor_calibrate() {
     // 关闭主循环
     esp_timer_stop(foc_timer);
 
-    float test_voltage = FOC_MCPWM_PERIOD / 6.0;  // 设置一个较小的测试电压
-
     // 第一步: 确定电机的旋转方向
     ESP_LOGI(TAG, "Starting motor direction calibration...");
     float theta = 0;
@@ -90,13 +88,13 @@ void FocDriver::foc_motor_calibrate() {
     int test_steps = 30;
 
     // 施加初始电压并等待稳定
-    _set_dq_out_exec(0, test_voltage, 0);  // 开环运行电机到0度
+    _set_dq_out_exec(0, FOC_MCPWM_CALIBRATE_VOLTAGE, 0);  // 开环运行电机到0度
     vTaskDelay(pdMS_TO_TICKS(300));  // 延时300ms
     float initial_angle = as5600_->read_radian_from_sensor_with_no_update();  // 读取编码器角度
 
     for (int i = 0; i < test_steps; i++) {
         theta += delta_theta;
-        _set_dq_out_exec(0, test_voltage, theta);
+        _set_dq_out_exec(0, FOC_MCPWM_CALIBRATE_VOLTAGE, theta);
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 
@@ -129,7 +127,7 @@ void FocDriver::foc_motor_calibrate() {
     ESP_LOGI(TAG, "Setting zero electrical angle...");
 
     // 施加D轴电压, 使电机定子磁场对准零位
-    _set_dq_out_exec(test_voltage, 0, 0);
+    _set_dq_out_exec(FOC_MCPWM_CALIBRATE_VOLTAGE, 0, 0);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
     // 读取编码器角度, 计算零电角度
@@ -145,11 +143,38 @@ void FocDriver::foc_motor_calibrate() {
     esp_timer_start_periodic(foc_timer, FOC_CALC_PERIOD);
 }
 
-void FocDriver::set_dq_out(float Ud, float Uq) {
-    current_uq_ = Uq * as5600_direction_; // 统一顺时针为正方向
-    current_ud_ = Ud;
+void FocDriver::set_free() {
+    current_mode_ = Mode::None;
 }
 
+void FocDriver::set_dq(float Ud, float Uq) {
+    current_uq_ = Uq;
+    current_ud_ = Ud;
+    current_mode_ = Mode::TorqueControl;
+}
+
+void FocDriver::set_velocity(float speed_rad_s, PIDController *pid_velocity) {
+    target_speed_rad_s_ = speed_rad_s;
+    pid_position_velocity_ = pid_velocity;
+    current_mode_ = Mode::VelocityControl;
+}
+
+void FocDriver::set_abs_position(float position_rad, PIDController *pid_position, PIDController *pid_position_v) {
+    target_position_rad_ = position_rad;
+    pid_position_ = pid_position;
+    pid_position_velocity_ = pid_position_v;
+    current_mode_ = Mode::AbsPositionControl;
+}
+
+void FocDriver::set_rel_position(float position_rad, PIDController *pid_position, PIDController *pid_position_v) {
+    target_position_rad_ = position_rad;
+    pid_position_ = pid_position;
+    pid_position_velocity_ = pid_position_v;
+    current_mode_ = Mode::RelPositionControl;
+}
+
+
+// private
 float FocDriver::_normalize_angle(float angle) {
     float a = fmodf(angle, 2.0f * M_PI);   //取余运算可以用于归一化，列出特殊值例子算便知
     return a >= 0 ? a : (a + 2.0f * (float) M_PI);
@@ -165,12 +190,52 @@ void FocDriver::_timer_callback_static(void *args) {
 }
 
 void FocDriver::_set_dq_out_loop() {    // 定时器循环用于控制电机
-    _set_dq_out_exec(current_ud_, current_uq_, _get_electrical_angle());
+//    n++;
+//    int64_t start_time = esp_timer_get_time();
+    switch (current_mode_) {
+        case Mode::None:
+            _set_dq_out_exec(0, 0, _get_electrical_angle());
+            break;
+        case Mode::TorqueControl:
+            _set_dq_out_exec(current_ud_, as5600_direction_ * current_uq_, _get_electrical_angle());
+            break;
+        case Mode::VelocityControl: {
+            float error = target_speed_rad_s_ - as5600_->get_velocity_filter();
+            float Uq = as5600_direction_ * pid_velocity_->calculate(error);
+            _set_dq_out_exec(0, Uq, _get_electrical_angle());
+            break;
+        }
+        case Mode::AbsPositionControl: {
+            float pos_error = target_position_rad_ - as5600_->get_custom_total_radian();
+            float target_speed = pid_position_velocity_->calculate(pos_error);
+            float vel_error = target_speed - as5600_->get_velocity_filter();
+            float Uq = as5600_direction_ * pid_position_->calculate(vel_error);
+            _set_dq_out_exec(0, Uq, _get_electrical_angle());
+            break;
+        }
+        case Mode::RelPositionControl: {
+            float pos_error = std::fmod(target_position_rad_, (float) M_TWOPI) - as5600_->get_radian();
+            if (pos_error > 0 && pos_error > M_PI) {
+                pos_error -= 2 * M_PI;
+            } else if (pos_error < 0 && pos_error < -M_PI) {
+                pos_error += 2 * M_PI;
+            }
+            float target_speed = pid_position_velocity_->calculate(pos_error);
+            float vel_error = target_speed - as5600_->get_velocity_filter();
+            float Uq = as5600_direction_ * pid_position_->calculate(vel_error);
+            _set_dq_out_exec(0, Uq, _get_electrical_angle());
+            break;
+        }
+    }
+//    int64_t end_time = esp_timer_get_time();
+//    if (n % 100 == 0) {
+//        ESP_LOGI(TAG, "Loop time: %lld us", end_time - start_time);
+//    }
 }
 
 void FocDriver::_set_dq_out_exec(float Ud, float Uq, float e_theta_rad) {
-    dq_out_.d = _constrain(Ud, -FOC_MCPWM_PERIOD / 2.0 + 1, FOC_MCPWM_PERIOD / 2.0 - 1);    // 限制Ud的范围
-    dq_out_.q = _constrain(Uq, -FOC_MCPWM_PERIOD / 2.0 + 1, FOC_MCPWM_PERIOD / 2.0 - 1);    // 限制Uq的范围
+    dq_out_.d = _constrain(Ud, -FOC_MCPWM_OUTPUT_LIMIT, FOC_MCPWM_OUTPUT_LIMIT);    // 限制Ud的范围
+    dq_out_.q = _constrain(Uq, -FOC_MCPWM_OUTPUT_LIMIT, FOC_MCPWM_OUTPUT_LIMIT);    // 限制Uq的范围
 
     foc_inverse_park_transform(e_theta_rad, &dq_out_, &ab_out_);
     foc_svpwm_duty_calculate(&ab_out_, &uvw_out_);    // SVPWM计算
@@ -184,6 +249,8 @@ void FocDriver::_set_dq_out_exec(float Ud, float Uq, float e_theta_rad) {
     // 使能PWM
     ESP_ERROR_CHECK(svpwm_inverter_set_duty(inverter_, uvw_duty_[0], uvw_duty_[1], uvw_duty_[2]));
 }
+
+
 
 
 

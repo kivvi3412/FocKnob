@@ -20,13 +20,13 @@ public:
 
     [[nodiscard]] float get_total_radian() const; // 获取累计的总角度
 
-    [[nodiscard]] float get_relative_total_radian() const; // 获取相对于重置时的累计总角度(自定义角度)
+    [[nodiscard]] float get_custom_total_radian() const; // 获取相对于重置时的累计总角度(自定义角度)
 
     [[nodiscard]] float get_velocity() const;  // 获取当前转速
 
     [[nodiscard]] float get_velocity_filter() const;  // 获取低通滤波后的转速
 
-    void reset_relative_total_radian(); // 重置累计总自定义角度
+    void reset_custom_total_radian(); // 重置累计总自定义角度
 
 
 private:
