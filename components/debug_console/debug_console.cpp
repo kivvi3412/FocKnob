@@ -82,7 +82,7 @@ int DebugConsole::set_params_cmd(int argc, char **argv) {
         *m_parm_list[4] = (float) set_params_args.parm5->dval[0];
     }
     // 同时打印5个参数
-    ESP_LOGI("set_parm", "parm1: %f, parm2: %f, parm3: %f, parm4: %f, parm5: %f",
+    ESP_LOGI("set_parm", "parm0: %f, parm1: %f, parm2: %f, parm3: %f, parm4: %f",
              *m_parm_list[0], *m_parm_list[1], *m_parm_list[2], *m_parm_list[3], *m_parm_list[4]);
     return 0;
 }

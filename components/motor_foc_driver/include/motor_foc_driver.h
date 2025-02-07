@@ -37,22 +37,19 @@ private:
         TorqueControl,  // 力矩控制模式
         VelocityControl,  // 速度控制模式
         AbsPositionControl,  // 绝对位置环控制模式
-        RelPositionControl  // 相对位置环控制模式
+        RelPositionControl,  // 相对位置环控制模式
     };
 
-    int n = 0;
+    Mode current_mode_ = Mode::None;
     float current_ud_ = 0;
     float current_uq_ = 0;
     float target_speed_rad_s_ = 0;
     float target_position_rad_ = 0;
-    Mode current_mode_ = Mode::None;
-
     // 速度环的PID控制器
     PIDController *pid_velocity_{};
     // 位置环的PID控制器
     PIDController *pid_position_{};
     PIDController *pid_position_velocity_{};
-
 
     gpio_num_t en_gpio_{};
     AS5600 *as5600_{};
@@ -73,8 +70,6 @@ private:
     static void _timer_callback_static(void *args);   // 定时器回调函数
     void _set_dq_out_loop();   // 设置DQ坐标 (力矩控制) 循环
     void _set_dq_out_exec(float Ud, float Uq, float e_theta_rad);    // 设置DQ坐标 (力矩控制) 执行
-
-
 };
 
 

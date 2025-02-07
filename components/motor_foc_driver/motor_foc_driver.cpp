@@ -155,7 +155,7 @@ void FocDriver::set_dq(float Ud, float Uq) {
 
 void FocDriver::set_velocity(float speed_rad_s, PIDController *pid_velocity) {
     target_speed_rad_s_ = speed_rad_s;
-    pid_position_velocity_ = pid_velocity;
+    pid_velocity_ = pid_velocity;
     current_mode_ = Mode::VelocityControl;
 }
 
@@ -249,9 +249,3 @@ void FocDriver::_set_dq_out_exec(float Ud, float Uq, float e_theta_rad) {
     // 使能PWM
     ESP_ERROR_CHECK(svpwm_inverter_set_duty(inverter_, uvw_duty_[0], uvw_duty_[1], uvw_duty_[2]));
 }
-
-
-
-
-
-
