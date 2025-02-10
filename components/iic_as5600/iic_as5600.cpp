@@ -52,7 +52,7 @@ float AS5600::read_radian_from_sensor() {
     return current_radian;
 }
 
-float AS5600::read_radian_from_sensor_with_no_update()  {
+float AS5600::read_radian_from_sensor_with_no_update() {
     auto current_radian = float(_location_read_raw() * M_TWOPI / IIC_AS5600_RESOLUTION);
     return current_radian;
 }
@@ -78,6 +78,10 @@ esp_err_t AS5600::_update_total_radian_and_velocity(float currentRadian) {
     velocity_filter_ = alpha * velocity_ + (1 - alpha) * velocity_filter_;   // 一阶低通滤波
 
     return ESP_OK;
+}
+
+void AS5600::set_custom_total_radian(float radian) {    // 设置相对的累计弧度，将当前总累计弧度作为新的偏移 (用户自定义
+    relative_offset_radian_ = total_accumulated_radian_ - radian;
 }
 
 void AS5600::reset_custom_total_radian() {    // 重置相对的累计弧度，将当前总累计弧度作为新的偏移 (用户自定义

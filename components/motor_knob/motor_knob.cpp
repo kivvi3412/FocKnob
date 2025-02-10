@@ -32,7 +32,7 @@ void RotaryKnob::attractor_with_rebound(int attractor_num, float left_rad, float
     left_boundary_rad_ = left_rad;
     right_boundary_rad_ = right_rad;
 
-    as5600_->reset_custom_total_radian();   // 重置自定义总弧度
+    as5600_->set_custom_total_radian(left_rad);   // 重置自定义总弧度
     current_mode_ = Mode::AttractorWithRebound;
 }
 
@@ -48,7 +48,7 @@ void RotaryKnob::damping_with_rebound(float damping_gain, float left_rad, float 
     left_boundary_rad_ = left_rad;
     right_boundary_rad_ = right_rad;
 
-    as5600_->reset_custom_total_radian();   // 重置自定义总弧度
+    as5600_->set_custom_total_radian(left_rad);   // 重置自定义总弧度
     current_mode_ = Mode::DampingWithRebound;
 }
 
@@ -59,6 +59,11 @@ int RotaryKnob::attractor_get_pos() const {
 float RotaryKnob::damping_get_pos() const {
     return damping_current_pos_;
 }
+
+float RotaryKnob::get_current_radian() const {
+    return as5600_->get_custom_total_radian();
+}
+
 
 // private
 void RotaryKnob::_timer_callback_static(void *args) {
@@ -100,7 +105,7 @@ void RotaryKnob::_knob_loop() {
             attractor_current_pos_ = attractor_index;
             // 计算误差和控制力矩
             float error = target_rad - current_rad;
-            float kp = 1000.0f;
+            float kp = 800.0f;
             float torque = _constrain(kp * error, -FOC_MCPWM_OUTPUT_LIMIT / 3.0f, FOC_MCPWM_OUTPUT_LIMIT / 3.0f);
             foc_driver_->set_dq(0, torque);
             break;
@@ -124,7 +129,7 @@ void RotaryKnob::_knob_loop() {
                 } else if (current_rad > right_boundary_rad_) {
                     error = right_boundary_rad_ - current_rad;
                 }
-                float kp = 1000.0f;  // 自行调参
+                float kp = 400.0f;  // 自行调参
                 float torque = _constrain(kp * error, -FOC_MCPWM_OUTPUT_LIMIT / 3.0f, FOC_MCPWM_OUTPUT_LIMIT / 3.0f);
                 foc_driver_->set_dq(0, torque);
             } else {
@@ -144,5 +149,6 @@ void RotaryKnob::_knob_loop() {
         }
     }
 }
+
 
 

@@ -26,6 +26,8 @@ public:
 
     [[nodiscard]] float get_custom_total_radian() const; // 获取相对于重置时的累计总角度(自定义角度)
 
+    void set_custom_total_radian(float radian); // 设置相对于重置时的累计总角度(自定义角度)
+
     void reset_custom_total_radian(); // 重置累计总自定义角度
 
 

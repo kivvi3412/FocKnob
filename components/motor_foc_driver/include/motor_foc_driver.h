@@ -10,6 +10,7 @@
 #include "esp_svpwm.h"
 #include <esp_timer.h>
 #include "motor_pid_controller.h"
+#include "freertos/FreeRTOS.h"
 
 
 class FocDriver {
@@ -64,12 +65,16 @@ private:
     int uvw_duty_[3]{};  // 电机PWM占空比
     inverter_handle_t inverter_{};
     esp_timer_handle_t foc_timer{};
+    TaskHandle_t foc_task_handle_; // FOC计算任务的句柄, 用于任务通知
 
     static float _normalize_angle(float angle);   // 角度归一化
     float _get_electrical_angle();   // 获取电机电角度
     static void _timer_callback_static(void *args);   // 定时器回调函数
+    static void _foc_task_static(void *arg);
     void _set_dq_out_loop();   // 设置DQ坐标 (力矩控制) 循环
     void _set_dq_out_exec(float Ud, float Uq, float e_theta_rad);    // 设置DQ坐标 (力矩控制) 执行
+
+    int n = 0;
 };
 
 

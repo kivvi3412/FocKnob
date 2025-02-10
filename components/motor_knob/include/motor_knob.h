@@ -14,6 +14,7 @@ public:
     void damping_with_rebound(float damping_gain, float left_rad, float right_rad); // 设置阻尼模式，超出边界后反弹
     [[nodiscard]] int attractor_get_pos() const;
     [[nodiscard]] float damping_get_pos() const;
+    [[nodiscard]] float get_current_radian() const;
 
 
 private:
@@ -44,8 +45,6 @@ private:
     // 超出边界后反弹参数 (当前电机角度为0度来设置
     float left_boundary_rad_ = -M_PI / 2;
     float right_boundary_rad_ = M_PI / 2;
-
-
 };
 
 #endif // FOCKNOB_ROTARY_KNOB_H

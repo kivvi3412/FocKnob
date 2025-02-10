@@ -5,7 +5,7 @@
 #include "motor_foc_driver.h"
 #include "project_conf.h"
 #include "driver/gpio.h"
-#include "freertos/FreeRTOS.h"
+
 
 static const char *TAG = "FocDriver";
 #define _constrain(amt, low, high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
@@ -53,7 +53,21 @@ FocDriver::FocDriver(gpio_num_t u_gpio,
     };
     ESP_ERROR_CHECK(gpio_config(&drv_en_config));
 
+    // 创建FOC计算任务
+//    xTaskCreate(_foc_task_static, "foc_calc_task", 4096, this, configMAX_PRIORITIES - 1, &foc_task_handle_);
+    xTaskCreatePinnedToCore(
+            _foc_task_static,
+            "foc_calc_task",
+            4096,
+            this,
+            20, //configMAX_PRIORITIES - 1
+            &foc_task_handle_,
+            0
+    );
+
     // 创建 foc 主循环定时器
+    // 开启 menuconfig 的 CONFIG_ESP_TIMER_SUPPORTS_ISR_DISPATCH_METHOD, .dispatch_method = ESP_TIMER_ISR,
+    // 调整优先级 组件配置 → ESP Timer → Timer task priority
     const esp_timer_create_args_t timer_args = {
             .callback = &_timer_callback_static,
             .arg = this,
@@ -186,51 +200,61 @@ float FocDriver::_get_electrical_angle() {
 
 void FocDriver::_timer_callback_static(void *args) {
     auto *self = static_cast<FocDriver *>(args);
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    vTaskNotifyGiveFromISR(self->foc_task_handle_, &xHigherPriorityTaskWoken);  // 通知FOC任务
+    portYIELD_FROM_ISR();
+}
+
+void FocDriver::_foc_task_static(void *arg) {
+    auto *self = static_cast<FocDriver *>(arg);
     self->_set_dq_out_loop();
 }
 
 void FocDriver::_set_dq_out_loop() {    // 定时器循环用于控制电机
-//    n++;
-//    int64_t start_time = esp_timer_get_time();
-    switch (current_mode_) {
-        case Mode::None:
-            _set_dq_out_exec(0, 0, _get_electrical_angle());
-            break;
-        case Mode::TorqueControl:
-            _set_dq_out_exec(current_ud_, as5600_direction_ * current_uq_, _get_electrical_angle());
-            break;
-        case Mode::VelocityControl: {
-            float error = target_speed_rad_s_ - as5600_->get_velocity_filter();
-            float Uq = as5600_direction_ * pid_velocity_->calculate(error);
-            _set_dq_out_exec(0, Uq, _get_electrical_angle());
-            break;
-        }
-        case Mode::AbsPositionControl: {
-            float pos_error = target_position_rad_ - as5600_->get_custom_total_radian();
-            float target_speed = pid_position_velocity_->calculate(pos_error);
-            float vel_error = target_speed - as5600_->get_velocity_filter();
-            float Uq = as5600_direction_ * pid_position_->calculate(vel_error);
-            _set_dq_out_exec(0, Uq, _get_electrical_angle());
-            break;
-        }
-        case Mode::RelPositionControl: {
-            float pos_error = std::fmod(target_position_rad_, (float) M_TWOPI) - as5600_->get_radian();
-            if (pos_error > 0 && pos_error > M_PI) {
-                pos_error -= 2 * M_PI;
-            } else if (pos_error < 0 && pos_error < -M_PI) {
-                pos_error += 2 * M_PI;
+    while (true) {
+        int64_t start_time = esp_timer_get_time();
+        n++;
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        switch (current_mode_) {
+            case Mode::None:
+                _set_dq_out_exec(0, 0, _get_electrical_angle());
+                break;
+            case Mode::TorqueControl:
+                _set_dq_out_exec(current_ud_, as5600_direction_ * current_uq_, _get_electrical_angle());
+                break;
+            case Mode::VelocityControl: {
+                float error = target_speed_rad_s_ - as5600_->get_velocity_filter();
+                float Uq = as5600_direction_ * pid_velocity_->calculate(error);
+                _set_dq_out_exec(0, Uq, _get_electrical_angle());
+                break;
             }
-            float target_speed = pid_position_velocity_->calculate(pos_error);
-            float vel_error = target_speed - as5600_->get_velocity_filter();
-            float Uq = as5600_direction_ * pid_position_->calculate(vel_error);
-            _set_dq_out_exec(0, Uq, _get_electrical_angle());
-            break;
+            case Mode::AbsPositionControl: {
+                float pos_error = target_position_rad_ - as5600_->get_custom_total_radian();
+                float target_speed = pid_position_velocity_->calculate(pos_error);
+                float vel_error = target_speed - as5600_->get_velocity_filter();
+                float Uq = as5600_direction_ * pid_position_->calculate(vel_error);
+                _set_dq_out_exec(0, Uq, _get_electrical_angle());
+                break;
+            }
+            case Mode::RelPositionControl: {
+                float pos_error = std::fmod(target_position_rad_, (float) M_TWOPI) - as5600_->get_radian();
+                if (pos_error > 0 && pos_error > M_PI) {
+                    pos_error -= 2 * M_PI;
+                } else if (pos_error < 0 && pos_error < -M_PI) {
+                    pos_error += 2 * M_PI;
+                }
+                float target_speed = pid_position_velocity_->calculate(pos_error);
+                float vel_error = target_speed - as5600_->get_velocity_filter();
+                float Uq = as5600_direction_ * pid_position_->calculate(vel_error);
+                _set_dq_out_exec(0, Uq, _get_electrical_angle());
+                break;
+            }
+        }
+        int64_t end_time = esp_timer_get_time();
+        if (n % 500 == 0) {
+            ESP_LOGI(TAG, "Loop time: %lld us", end_time - start_time);
         }
     }
-//    int64_t end_time = esp_timer_get_time();
-//    if (n % 100 == 0) {
-//        ESP_LOGI(TAG, "Loop time: %lld us", end_time - start_time);
-//    }
 }
 
 void FocDriver::_set_dq_out_exec(float Ud, float Uq, float e_theta_rad) {
