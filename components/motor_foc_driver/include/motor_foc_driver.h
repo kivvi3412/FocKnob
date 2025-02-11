@@ -73,8 +73,6 @@ private:
     static void _foc_task_static(void *arg);
     void _set_dq_out_loop();   // 设置DQ坐标 (力矩控制) 循环
     void _set_dq_out_exec(float Ud, float Uq, float e_theta_rad);    // 设置DQ坐标 (力矩控制) 执行
-
-    int n = 0;
 };
 
 

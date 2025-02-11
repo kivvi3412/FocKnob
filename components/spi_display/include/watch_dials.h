@@ -8,12 +8,37 @@
 #include <vector>
 #include "spi_display.h"
 
-// 无反弹显示器
-class DemoDisplay {
+/*
+ * @brief 表盘都放在这里
+ */
+class DisplayInit : public ClockFace {  // 开机表盘
 public:
-    explicit DemoDisplay(PhysicalDisplay *scr);
+    explicit DisplayInit(PhysicalDisplay *scr);
 
-    ~DemoDisplay();
+    ~DisplayInit() override;
+
+    void init() override;
+
+    void destroy() override;
+
+    void set_main_info_text(const char *text);
+
+private:
+    lv_obj_t *root_scr;
+    lv_obj_t *ui_Screen1{};
+    lv_obj_t *ui_Label1{};
+};
+
+
+class DisplayDemo : public ClockFace {
+public:
+    explicit DisplayDemo(PhysicalDisplay *scr);
+
+    ~DisplayDemo() override;
+
+    void init() override;
+
+    void destroy() override;
 
     void set_pointer_radian(float radian);
 
@@ -24,7 +49,7 @@ public:
     void create_clock_ticks_manual(float radius, float length, lv_color_t color); // 手动在某弧度处添加时钟刻度
 
     void create_clock_ticks_auto(int number, float length, lv_color_t color); // 自动添加时钟刻度(360度平分)
-    
+
     void create_clock_ticks_range(int number, float start_rad, float end_rad, float length, lv_color_t color);
 
     void del_clock_ticks(); // 删除所有时钟刻度
@@ -35,11 +60,12 @@ public:
 
 
 private:
-    lv_obj_t *ui_Screen1;
-    lv_obj_t *ui_nostylearc;
-    lv_obj_t *ui_textContainer1;
-    lv_obj_t *ui_digitinfo;
-    lv_obj_t *ui_textinfo;
+    lv_obj_t *root_scr;
+    lv_obj_t *ui_Screen1{};
+    lv_obj_t *ui_nostylearc{};
+    lv_obj_t *ui_textContainer1{};
+    lv_obj_t *ui_digitinfo{};
+    lv_obj_t *ui_textinfo{};
 
     struct ClockLineInfo {
         lv_obj_t *line;
@@ -49,8 +75,8 @@ private:
         lv_color_t color;
     };
     std::vector<ClockLineInfo> clock_lines_;
-    lv_obj_t *pressure_feedback_arc_;
-    lv_obj_t *background_board_;
+    lv_obj_t *pressure_feedback_arc_{};
+    lv_obj_t *background_board_{};
 
     int previous_pointer_output_ = 0;
     int previous_main_info_output_ = 0;
@@ -69,11 +95,6 @@ private:
     void _del_all_clock_ticks();
 
     static float _positive_fmod(float a, float b);
-};
-
-// 超限反弹显示器
-class BounceDisplay {
-
 };
 
 

@@ -5,13 +5,71 @@
 #include "watch_dials.h"
 #include "project_conf.h"
 #include <cmath>
-#include <esp_log.h>
 
+DisplayInit::DisplayInit(PhysicalDisplay *scr) {
+    root_scr = scr->get_screen();
+}
 
-DemoDisplay::DemoDisplay(PhysicalDisplay *scr) {
+DisplayInit::~DisplayInit() {
+    if (ui_Screen1 != nullptr) {
+        lvgl_port_lock(0);
+        lv_obj_del(ui_Screen1);
+        lvgl_port_unlock();
+    }
+}
+
+void DisplayInit::init() {
     lvgl_port_lock(0);
 
-    ui_Screen1 = lv_obj_create(scr->get_screen());
+    ui_Screen1 = lv_obj_create(root_scr);
+    lv_obj_remove_flag(ui_Screen1, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_size(ui_Screen1, 240, 240);  // 屏幕大小
+    lv_obj_set_align(ui_Screen1, LV_ALIGN_CENTER);  // 中心对齐
+    lv_obj_set_style_bg_color(ui_Screen1, lv_color_black(), LV_PART_MAIN | LV_STATE_DEFAULT);   // 背景色
+    lv_obj_set_style_border_width(ui_Screen1, 0, LV_PART_MAIN | LV_STATE_DEFAULT);  // 边框宽度
+    lv_obj_set_style_pad_all(ui_Screen1, 0, LV_PART_MAIN | LV_STATE_DEFAULT);   // 内边距
+
+    ui_Label1 = lv_label_create(ui_Screen1);
+    lv_obj_set_width(ui_Label1, LV_SIZE_CONTENT);  /// 1
+    lv_obj_set_height(ui_Label1, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_align(ui_Label1, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label1, "Initializing...");
+    lv_obj_set_style_text_color(ui_Label1, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_Label1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label1, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lvgl_port_unlock();
+}
+
+void DisplayInit::destroy() {
+    lvgl_port_lock(0);
+    lv_obj_del(ui_Screen1);
+    lvgl_port_unlock();
+}
+
+void DisplayInit::set_main_info_text(const char *text) {
+    lvgl_port_lock(0);
+    lv_label_set_text(ui_Label1, text);
+    lvgl_port_unlock();
+}
+
+
+DisplayDemo::DisplayDemo(PhysicalDisplay *scr) {
+    root_scr = scr->get_screen();
+}
+
+DisplayDemo::~DisplayDemo() {
+    if (ui_Screen1 != nullptr) {
+        lvgl_port_lock(0);
+        lv_obj_del(ui_Screen1);
+        lvgl_port_unlock();
+    }
+}
+
+void DisplayDemo::init() {
+    lvgl_port_lock(0);
+
+    ui_Screen1 = lv_obj_create(root_scr);
     lv_obj_remove_flag(ui_Screen1, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_size(ui_Screen1, 240, 240);  // 屏幕大小
     lv_obj_set_align(ui_Screen1, LV_ALIGN_CENTER);  // 中心对齐
@@ -89,13 +147,15 @@ DemoDisplay::DemoDisplay(PhysicalDisplay *scr) {
     lvgl_port_unlock();
 }
 
-DemoDisplay::~DemoDisplay() {
-    lvgl_port_lock(0);
-    lv_obj_del(ui_Screen1);
-    lvgl_port_unlock();
+void DisplayDemo::destroy() {
+    if (ui_Screen1 != nullptr) {
+        lvgl_port_lock(0);
+        lv_obj_del(ui_Screen1);
+        lvgl_port_unlock();
+    }
 }
 
-void DemoDisplay::set_pointer_radian(float radian) {
+void DisplayDemo::set_pointer_radian(float radian) {
     // radian 为弧度值，将其转换为角度值, radian 可能为负数
     int degree = (int) (radian * 180 / M_PI);
     int display_degree = _positive_fmod(degree, 360);
@@ -107,7 +167,7 @@ void DemoDisplay::set_pointer_radian(float radian) {
     }
 }
 
-void DemoDisplay::set_main_info_text(int value) {
+void DisplayDemo::set_main_info_text(int value) {
     if (value != previous_main_info_output_) {
         lvgl_port_lock(0);
         lv_label_set_text_fmt(ui_digitinfo, "%d", value);
@@ -116,13 +176,13 @@ void DemoDisplay::set_main_info_text(int value) {
     }
 }
 
-void DemoDisplay::set_secondary_info_text(const char *text) {
+void DisplayDemo::set_secondary_info_text(const char *text) {
     lvgl_port_lock(0);
     lv_label_set_text(ui_textinfo, text);
     lvgl_port_unlock();
 }
 
-void DemoDisplay::create_clock_ticks_manual(float radius, float length, lv_color_t color) {
+void DisplayDemo::create_clock_ticks_manual(float radius, float length, lv_color_t color) {
     ClockLineInfo l_info{};
     lvgl_port_lock(0);
     l_info.line = lv_line_create(ui_Screen1);
@@ -135,7 +195,7 @@ void DemoDisplay::create_clock_ticks_manual(float radius, float length, lv_color
     lvgl_port_unlock();
 }
 
-void DemoDisplay::create_clock_ticks_auto(int number, float length, lv_color_t color) {
+void DisplayDemo::create_clock_ticks_auto(int number, float length, lv_color_t color) {
     float radius = 0;
     float step = M_TWOPI / number;
     lvgl_port_lock(0);
@@ -153,7 +213,7 @@ void DemoDisplay::create_clock_ticks_auto(int number, float length, lv_color_t c
     lvgl_port_unlock();
 }
 
-void DemoDisplay::create_clock_ticks_range(int number, float start_rad, float end_rad, float length, lv_color_t color) {
+void DisplayDemo::create_clock_ticks_range(int number, float start_rad, float end_rad, float length, lv_color_t color) {
     lvgl_port_lock(0);
 
     // 如果刻度数不合理，则直接返回
@@ -189,13 +249,13 @@ void DemoDisplay::create_clock_ticks_range(int number, float start_rad, float en
     lvgl_port_unlock();
 }
 
-void DemoDisplay::del_clock_ticks() {
+void DisplayDemo::del_clock_ticks() {
     lvgl_port_lock(0);
     _del_all_clock_ticks();
     lvgl_port_unlock();
 }
 
-void DemoDisplay::set_pressure_feedback_arc(float target_rad, float current_rad) {
+void DisplayDemo::set_pressure_feedback_arc(float target_rad, float current_rad) {
     float pressure_radius = 0;
     int final_target_rad = 270 + int(target_rad * 180 / M_PI);
     if (final_target_rad != previous_pressure_feedback_arc_target_output_) {
@@ -230,7 +290,7 @@ void DemoDisplay::set_pressure_feedback_arc(float target_rad, float current_rad)
     }
 }
 
-void DemoDisplay::set_background_board_percent(int percent) {
+void DisplayDemo::set_background_board_percent(int percent) {
     if (percent < 0) {
         percent = 0;
     } else if (percent > 100) {
@@ -244,12 +304,12 @@ void DemoDisplay::set_background_board_percent(int percent) {
     }
 }
 
-int DemoDisplay::_positive_fmod(int x, int y) {
+int DisplayDemo::_positive_fmod(int x, int y) {
     int mod = std::fmod(x, y);
     return (mod < 0) ? (mod + y) : mod;
 }
 
-void DemoDisplay::_add_clock_ticks(DemoDisplay::ClockLineInfo *l_info) {    // 需要外部加锁使用
+void DisplayDemo::_add_clock_ticks(DisplayDemo::ClockLineInfo *l_info) {    // 需要外部加锁使用
     float r = (float) SPI_LCD_H_RES / 2;
 
     // radius 是在某个角度上，画一条直线，直线由外向内延伸长度 length, 求出 (x1, y1) ~ (x2, y2) (仅画一根线)
@@ -266,35 +326,21 @@ void DemoDisplay::_add_clock_ticks(DemoDisplay::ClockLineInfo *l_info) {    // �
     clock_lines_.push_back(*l_info);
 }
 
-void DemoDisplay::_del_clock_ticks(DemoDisplay::ClockLineInfo *l_info) {
+void DisplayDemo::_del_clock_ticks(DisplayDemo::ClockLineInfo *l_info) {
     lvgl_port_lock(0);
     lv_obj_del(l_info->line);
     delete[] l_info->line_points;
     lvgl_port_unlock();
 }
 
-void DemoDisplay::_del_all_clock_ticks() {
+void DisplayDemo::_del_all_clock_ticks() {
     for (auto &clock_line: clock_lines_) {
         _del_clock_ticks(&clock_line);
     }
     clock_lines_.clear();
 }
 
-float DemoDisplay::_positive_fmod(float a, float b) {
+float DisplayDemo::_positive_fmod(float a, float b) {
     float mod = std::fmod(a, b);
     return (mod < 0) ? (mod + b) : mod;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

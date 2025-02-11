@@ -212,8 +212,6 @@ void FocDriver::_foc_task_static(void *arg) {
 
 void FocDriver::_set_dq_out_loop() {    // 定时器循环用于控制电机
     while (true) {
-        int64_t start_time = esp_timer_get_time();
-        n++;
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         switch (current_mode_) {
             case Mode::None:
@@ -249,10 +247,6 @@ void FocDriver::_set_dq_out_loop() {    // 定时器循环用于控制电机
                 _set_dq_out_exec(0, Uq, _get_electrical_angle());
                 break;
             }
-        }
-        int64_t end_time = esp_timer_get_time();
-        if (n % 500 == 0) {
-            ESP_LOGI(TAG, "Loop time: %lld us", end_time - start_time);
         }
     }
 }
