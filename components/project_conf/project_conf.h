@@ -37,5 +37,9 @@
 #define SPI_LCD_CS                      10
 #define SPI_LCD_MOSI                    9
 
+#define HX711_DOUT_GPIO                 GPIO_NUM_47
+#define HX711_SCK_GPIO                  GPIO_NUM_48
+#define PRESS_THRESHOLD                 120.0f              // 按下阈值, 单位为克
+#define PRESS_SHOCKPROOFNESS            300                 // 震动强度反馈
 
 #endif //FOCKNOB_PROJECT_CONF_H

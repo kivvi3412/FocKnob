@@ -26,6 +26,19 @@ StartingUpMode::~StartingUpMode() {
     init_screen_->destroy();
 }
 
+void StartingUpMode::stop_motor() {
+    foc_driver_->set_dq(0, 0);
+}
+
+void StartingUpMode::resume_motor() {
+
+}
+
+void StartingUpMode::destroy() {
+    foc_driver_->set_free();
+    init_screen_->destroy();
+}
+
 
 UnboundedMode::UnboundedMode(RotaryKnob *knob, PhysicalDisplay *display) {
     rotary_knob_ = knob;
@@ -39,13 +52,26 @@ UnboundedMode::~UnboundedMode() {
 void UnboundedMode::init() {
     display_demo_->init();
     display_demo_->set_secondary_info_text("Unbounded Mode");
-    rotary_knob_->damping(0);
+    rotary_knob_->damping(0, true);
 }
 
 void UnboundedMode::update() {
     float current_radian = rotary_knob_->get_current_radian();
     display_demo_->set_pointer_radian(current_radian);
     display_demo_->set_main_info_text(int(current_radian));
+}
+
+void UnboundedMode::stop_motor() {
+    rotary_knob_->stop();
+}
+
+void UnboundedMode::resume_motor() {
+
+}
+
+void UnboundedMode::destroy() {
+    display_demo_->destroy();
+    rotary_knob_->stop();
 }
 
 
@@ -63,7 +89,7 @@ void BoundedMode::init() {
     display_demo_->set_secondary_info_text("Bounded Mode 0-10\nNo Damping");
     display_demo_->create_clock_ticks_manual(-bound_range_, 15, lv_color_white());
     display_demo_->create_clock_ticks_manual(bound_range_, 15, lv_color_white());
-    rotary_knob_->damping_with_rebound(0, -bound_range_, bound_range_);
+    rotary_knob_->damping_with_rebound(0, -bound_range_, bound_range_, true);
 }
 
 void BoundedMode::update() {
@@ -88,6 +114,19 @@ void BoundedMode::update() {
     }
 }
 
+void BoundedMode::stop_motor() {
+    rotary_knob_->stop();
+}
+
+void BoundedMode::resume_motor() {
+    rotary_knob_->damping_with_rebound(0, -bound_range_, bound_range_, false);
+}
+
+void BoundedMode::destroy() {
+    display_demo_->destroy();
+    rotary_knob_->stop();
+}
+
 
 SwitchMode::SwitchMode(RotaryKnob *knob, PhysicalDisplay *display) {
     rotary_knob_ = knob;
@@ -103,7 +142,7 @@ void SwitchMode::init() {
     display_demo_->set_secondary_info_text("On/Off");
     display_demo_->create_clock_ticks_manual(-bound_range_, 15, lv_color_white());
     display_demo_->create_clock_ticks_manual(bound_range_, 15, lv_color_white());
-    rotary_knob_->attractor_with_rebound(2, -bound_range_, bound_range_);
+    rotary_knob_->attractor_with_rebound(2, -bound_range_, bound_range_, true);
 }
 
 void SwitchMode::update() {
@@ -134,6 +173,19 @@ void SwitchMode::update() {
     }
 }
 
+void SwitchMode::stop_motor() {
+    rotary_knob_->stop();
+}
+
+void SwitchMode::resume_motor() {
+    rotary_knob_->attractor_with_rebound(2, -bound_range_, bound_range_, false);
+}
+
+void SwitchMode::destroy() {
+    display_demo_->destroy();
+    rotary_knob_->stop();
+}
+
 
 AttractorMode::AttractorMode(RotaryKnob *knob, PhysicalDisplay *display) {
     rotary_knob_ = knob;
@@ -141,12 +193,10 @@ AttractorMode::AttractorMode(RotaryKnob *knob, PhysicalDisplay *display) {
 }
 
 void AttractorMode::init() {
-    int attr_number = 8;
-
     display_demo_->init();
     display_demo_->set_secondary_info_text("Attractor Mode");
-    display_demo_->create_clock_ticks_auto(attr_number, 15, lv_color_white());
-    rotary_knob_->attractor(attr_number);
+    display_demo_->create_clock_ticks_auto(attr_number_, 15, lv_color_white());
+    rotary_knob_->attractor(attr_number_, true);
 }
 
 void AttractorMode::update() {
@@ -160,4 +210,18 @@ void AttractorMode::update() {
 
 AttractorMode::~AttractorMode() {
     display_demo_->destroy();
+    rotary_knob_->stop();
+}
+
+void AttractorMode::stop_motor() {
+    rotary_knob_->stop();
+}
+
+void AttractorMode::resume_motor() {
+    rotary_knob_->attractor(8, false);
+}
+
+void AttractorMode::destroy() {
+    display_demo_->destroy();
+    rotary_knob_->stop();
 }

@@ -17,7 +17,10 @@ public:
     virtual ~LogicMode() = default;
 
     virtual void init() = 0;  // 初始化模式
+    virtual void destroy() = 0;  // 销毁模式
     virtual void update() = 0;  // 更新模式逻辑
+    virtual void stop_motor() = 0;  // 临时释放电机反馈，这样可以给其他东西用
+    virtual void resume_motor() = 0;  // 恢复旋钮对电机控制
 };
 
 /*
@@ -31,7 +34,13 @@ public:
 
     void init() override;
 
+    void destroy() override;
+
     void update() override;
+
+    void stop_motor() override;
+
+    void resume_motor() override;
 
 private:
     FocDriver *foc_driver_;
@@ -51,8 +60,13 @@ public:
 
     void init() override;
 
+    void destroy() override;
+
     void update() override;
 
+    void stop_motor() override;
+
+    void resume_motor() override;
 
 private:
     RotaryKnob *rotary_knob_;
@@ -70,7 +84,13 @@ public:
 
     void init() override;
 
+    void destroy() override;
+
     void update() override;
+
+    void stop_motor() override;
+
+    void resume_motor() override;
 
 private:
     float bound_range_ = M_PI_4;
@@ -91,7 +111,13 @@ public:
 
     void init() override;
 
+    void destroy() override;
+
     void update() override;
+
+    void stop_motor() override;
+
+    void resume_motor() override;
 
 private:
     float bound_range_ = M_PI / 6.0f;
@@ -113,12 +139,18 @@ public:
 
     void init() override;
 
+    void destroy() override;
+
     void update() override;
 
+    void stop_motor() override;
+
+    void resume_motor() override;
 
 private:
     RotaryKnob *rotary_knob_;
     DisplayDemo *display_demo_;
+    int attr_number_ = 8;
 };
 
 

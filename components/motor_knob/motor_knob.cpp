@@ -16,39 +16,50 @@ RotaryKnob::RotaryKnob(FocDriver *focDriver, AS5600 *as5600)
     ESP_ERROR_CHECK(esp_timer_start_periodic(knob_timer_, FOC_CALC_PERIOD));
 }
 
+void RotaryKnob::stop() {
+    current_mode_ = Mode::None;
+    foc_driver_->set_dq(0, 0);
+}
 
-void RotaryKnob::attractor(int attractor_num) {
+void RotaryKnob::attractor(int attractor_num, bool reset_custom_pos) {
     attractor_number_ = (attractor_num < 1) ? 1 : attractor_num;
-
-    as5600_->reset_custom_total_radian();   // 重置自定义总弧度
+    if (reset_custom_pos) {
+        as5600_->reset_custom_total_radian();   // 重置自定义总弧度
+    }
     current_mode_ = Mode::Attractor;
 }
 
 /*
  * @brief 设置棘轮吸附模式，超出边界后反弹, 当前角度为0度，指向left_rad, 顺时针旋转pos增大，如果 a_num = 2 则有吸附点 0 和 1
  */
-void RotaryKnob::attractor_with_rebound(int attractor_num, float left_rad, float right_rad) {
+void RotaryKnob::attractor_with_rebound(int attractor_num, float left_rad, float right_rad, bool reset_custom_pos) {
     attractor_number_ = (attractor_num < 1) ? 1 : attractor_num - 1;
     left_boundary_rad_ = left_rad;
     right_boundary_rad_ = right_rad;
 
-    as5600_->set_custom_total_radian(left_rad);   // 重置自定义总弧度
+    if (reset_custom_pos) {
+        as5600_->set_custom_total_radian(left_rad);   // 重置自定义总弧度
+    }
     current_mode_ = Mode::AttractorWithRebound;
 }
 
-void RotaryKnob::damping(float damping_gain) {
+void RotaryKnob::damping(float damping_gain, bool reset_custom_pos) {
     damping_gain_ = damping_gain;
 
-    as5600_->reset_custom_total_radian();   // 重置自定义总弧度
+    if (reset_custom_pos) {
+        as5600_->reset_custom_total_radian();   // 重置自定义总弧度
+    }
     current_mode_ = Mode::Damping;
 }
 
-void RotaryKnob::damping_with_rebound(float damping_gain, float left_rad, float right_rad) {
+void RotaryKnob::damping_with_rebound(float damping_gain, float left_rad, float right_rad, bool reset_custom_pos) {
     damping_gain_ = damping_gain;
     left_boundary_rad_ = left_rad;
     right_boundary_rad_ = right_rad;
 
-    as5600_->set_custom_total_radian(left_rad);   // 重置自定义总弧度
+    if (reset_custom_pos) {
+        as5600_->set_custom_total_radian(left_rad);   // 重置自定义总弧度
+    }
     current_mode_ = Mode::DampingWithRebound;
 }
 
@@ -149,6 +160,8 @@ void RotaryKnob::_knob_loop() {
         }
     }
 }
+
+
 
 
 
