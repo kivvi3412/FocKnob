@@ -6,6 +6,7 @@
 #include "debug_console.h"
 #include "logic_manager.h"
 #include "logic_mode.h"
+#include "pressure_sensor.h"
 
 void activity_monitor(void *arg) {
     /*
@@ -46,33 +47,17 @@ extern "C" void app_main() {
     );
     auto *rotary_knob = new RotaryKnob(foc_driver, as5600);
     auto *physical_display = new PhysicalDisplay();
-    auto *logic_manager = new LogicManager();
+    auto *pressure_sensor = new PressureSensor(HX711_DOUT_GPIO, HX711_SCK_GPIO);
+    auto *logic_manager = new LogicManager(pressure_sensor, foc_driver);
 
-    // 开机
-    auto *startup_mode = new StartingUpMode(foc_driver, physical_display);
-    logic_manager->set_mode(startup_mode);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    logic_manager->set_mode(new StartingUpMode(foc_driver, physical_display));
 
-    // 自由转动模式
-    auto *unbounded_mode = new UnboundedMode(rotary_knob, physical_display);
-    logic_manager->set_mode(unbounded_mode);
-    vTaskDelay(pdMS_TO_TICKS(3));
+    // 注册模式
+    logic_manager->register_mode("UnboundedMode", new UnboundedMode(rotary_knob, physical_display));
+    logic_manager->register_mode("BoundedMode", new BoundedMode(rotary_knob, physical_display));
+    logic_manager->register_mode("SwitchMode", new SwitchMode(rotary_knob, physical_display));
+    logic_manager->register_mode("AttractorMode", new AttractorMode(rotary_knob, physical_display));
 
-    // 有限转动模式0-10
-    auto *bounded_mode = new BoundedMode(rotary_knob, physical_display);
-    logic_manager->set_mode(bounded_mode);
-    vTaskDelay(pdMS_TO_TICKS(10000));
-
-    // 开关模式
-    auto *switch_mode = new SwitchMode(rotary_knob, physical_display);
-    logic_manager->set_mode(switch_mode);
-    vTaskDelay(pdMS_TO_TICKS(10000));
-
-    // 棘轮模式
-    auto *attractor_mode = new AttractorMode(rotary_knob, physical_display);
-    logic_manager->set_mode(attractor_mode);
-    vTaskDelay(pdMS_TO_TICKS(10000));
-
-
-    xTaskCreatePinnedToCore(activity_monitor, "activity_monitor", 4096, NULL, 1, NULL, 1);
+//    xTaskCreatePinnedToCore(activity_monitor, "activity_monitor", 4096, NULL, 1, NULL, 1);
 }
+

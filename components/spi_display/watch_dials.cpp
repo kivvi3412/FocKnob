@@ -5,6 +5,7 @@
 #include "watch_dials.h"
 #include "project_conf.h"
 #include <cmath>
+#include <esp_log.h>
 
 DisplayInit::DisplayInit(PhysicalDisplay *scr) {
     root_scr = scr->get_screen();
