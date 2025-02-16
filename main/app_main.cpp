@@ -50,6 +50,7 @@ extern "C" void app_main() {
     auto *pressure_sensor = new PressureSensor(HX711_DOUT_GPIO, HX711_SCK_GPIO);
     auto *logic_manager = new LogicManager(pressure_sensor, foc_driver);
 
+    // 设置开机模式
     logic_manager->set_mode(new StartingUpMode(foc_driver, physical_display));
 
     // 注册模式
@@ -57,6 +58,8 @@ extern "C" void app_main() {
     logic_manager->register_mode("BoundedMode", new BoundedMode(rotary_knob, physical_display));
     logic_manager->register_mode("SwitchMode", new SwitchMode(rotary_knob, physical_display));
     logic_manager->register_mode("AttractorMode", new AttractorMode(rotary_knob, physical_display));
+
+    logic_manager->set_mode_by_name("UnboundedMode");
 
 //    xTaskCreatePinnedToCore(activity_monitor, "activity_monitor", 4096, NULL, 1, NULL, 1);
 }

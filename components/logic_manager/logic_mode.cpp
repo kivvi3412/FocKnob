@@ -6,11 +6,11 @@
 
 StartingUpMode::StartingUpMode(FocDriver *driver, PhysicalDisplay *display) {
     foc_driver_ = driver;
-    display_ = display;
+    physical_display_ = display;
 }
 
 void StartingUpMode::init() {
-    init_screen_ = new DisplayInit(display_);
+    init_screen_ = new DisplayInit(physical_display_);
     init_screen_->init(); // 初始化开机动画
     vTaskDelay(pdMS_TO_TICKS(200));
     init_screen_->set_main_info_text("Motor Calibration...");
@@ -42,7 +42,7 @@ void StartingUpMode::destroy() {
 
 UnboundedMode::UnboundedMode(RotaryKnob *knob, PhysicalDisplay *display) {
     rotary_knob_ = knob;
-    display_demo_ = new DisplayDemo(display);
+    physical_display_ = display;
 }
 
 UnboundedMode::~UnboundedMode() {
@@ -50,6 +50,7 @@ UnboundedMode::~UnboundedMode() {
 }
 
 void UnboundedMode::init() {
+    display_demo_ = new DisplayDemo(physical_display_);
     display_demo_->init();
     display_demo_->set_secondary_info_text("Unbounded Mode");
     rotary_knob_->damping(0, true);
@@ -77,7 +78,7 @@ void UnboundedMode::destroy() {
 
 BoundedMode::BoundedMode(RotaryKnob *knob, PhysicalDisplay *display) {
     rotary_knob_ = knob;
-    display_demo_ = new DisplayDemo(display);
+    physical_display_ = display;
 }
 
 BoundedMode::~BoundedMode() {
@@ -85,6 +86,7 @@ BoundedMode::~BoundedMode() {
 }
 
 void BoundedMode::init() {
+    display_demo_ = new DisplayDemo(physical_display_);
     display_demo_->init();
     display_demo_->set_secondary_info_text("Bounded Mode 0-10\nNo Damping");
     display_demo_->create_clock_ticks_manual(-bound_range_, 15, lv_color_white());
@@ -109,7 +111,7 @@ void BoundedMode::update() {
         int rounded_value = static_cast<int>(std::round(current_pointer));
         display_demo_->set_pointer_radian(current_radian);
         display_demo_->set_main_info_text(rounded_value);
-        display_demo_->set_pressure_feedback_arc(0, 0);
+//        display_demo_->set_pressure_feedback_arc(0, 0);
         display_demo_->set_background_board_percent(rounded_value * 100 / (bound_range_display_ - 1));
     }
 }
@@ -130,7 +132,7 @@ void BoundedMode::destroy() {
 
 SwitchMode::SwitchMode(RotaryKnob *knob, PhysicalDisplay *display) {
     rotary_knob_ = knob;
-    display_demo_ = new DisplayDemo(display);
+    physical_display_ = display;
 }
 
 SwitchMode::~SwitchMode() {
@@ -138,6 +140,7 @@ SwitchMode::~SwitchMode() {
 }
 
 void SwitchMode::init() {
+    display_demo_ = new DisplayDemo(physical_display_);
     display_demo_->init();
     display_demo_->set_secondary_info_text("On/Off");
     display_demo_->create_clock_ticks_manual(-bound_range_, 15, lv_color_white());
@@ -189,10 +192,11 @@ void SwitchMode::destroy() {
 
 AttractorMode::AttractorMode(RotaryKnob *knob, PhysicalDisplay *display) {
     rotary_knob_ = knob;
-    display_demo_ = new DisplayDemo(display);
+    physical_display_ = display;
 }
 
 void AttractorMode::init() {
+    display_demo_ = new DisplayDemo(physical_display_);
     display_demo_->init();
     display_demo_->set_secondary_info_text("Attractor Mode");
     display_demo_->create_clock_ticks_auto(attr_number_, 15, lv_color_white());

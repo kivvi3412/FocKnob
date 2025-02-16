@@ -44,7 +44,7 @@ public:
 
 private:
     FocDriver *foc_driver_;
-    PhysicalDisplay *display_;
+    PhysicalDisplay *physical_display_;
     DisplayInit *init_screen_{};
 };
 
@@ -70,7 +70,8 @@ public:
 
 private:
     RotaryKnob *rotary_knob_;
-    DisplayDemo *display_demo_;
+    PhysicalDisplay *physical_display_;
+    DisplayDemo *display_demo_{};
 };
 
 /*
@@ -97,7 +98,8 @@ private:
     int bound_range_display_ = 11;
 
     RotaryKnob *rotary_knob_;
-    DisplayDemo *display_demo_;
+    PhysicalDisplay *physical_display_;
+    DisplayDemo *display_demo_{};
 };
 
 /*
@@ -124,7 +126,8 @@ private:
     int bound_range_display_ = 2;
 
     RotaryKnob *rotary_knob_;
-    DisplayDemo *display_demo_;
+    PhysicalDisplay *physical_display_;
+    DisplayDemo *display_demo_{};
 };
 
 
@@ -149,7 +152,8 @@ public:
 
 private:
     RotaryKnob *rotary_knob_;
-    DisplayDemo *display_demo_;
+    PhysicalDisplay *physical_display_;
+    DisplayDemo *display_demo_{};
     int attr_number_ = 8;
 };
 
