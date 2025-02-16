@@ -16,6 +16,10 @@
 #include <string>
 #include <algorithm>
 
+/*
+ * @brief 逻辑管理器, 负责管理逻辑模式, 电机驱动, 按钮力反馈
+ */
+
 class LogicManager {
 public:
     LogicManager(PressureSensor *pressure_sensor, FocDriver *foc_driver);

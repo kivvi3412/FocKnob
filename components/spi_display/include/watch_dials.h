@@ -29,7 +29,9 @@ private:
     lv_obj_t *ui_Label1{};
 };
 
-
+/*
+ * @brief 功能演示用表盘
+ */
 class DisplayDemo : public ClockFace {
 public:
     explicit DisplayDemo(PhysicalDisplay *scr);

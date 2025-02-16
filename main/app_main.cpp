@@ -1,4 +1,3 @@
-#include <esp_task_wdt.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
@@ -61,6 +60,6 @@ extern "C" void app_main() {
 
     logic_manager->set_mode_by_name("UnboundedMode");
 
-//    xTaskCreatePinnedToCore(activity_monitor, "activity_monitor", 4096, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(activity_monitor, "activity_monitor", 4096, NULL, 1, NULL, 1);
 }
 

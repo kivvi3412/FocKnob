@@ -58,7 +58,7 @@ void LogicManager::set_next_mode() {
 
 
 void LogicManager::_on_press() {    // 震动反馈
-    current_mode_->stop_motor();  // 按下按钮, 停止当前电机旋钮反馈
+    current_mode_->stop_motor();  // 按下按钮, 停止当前电机旋钮反馈( 模拟按键按下 )
     foc_driver_->set_dq(0, PRESS_SHOCKPROOFNESS);
     vTaskDelay(pdMS_TO_TICKS(1));
     foc_driver_->set_dq(0, -PRESS_SHOCKPROOFNESS);
@@ -67,8 +67,7 @@ void LogicManager::_on_press() {    // 震动反馈
     current_mode_->resume_motor();  // 启动旋钮电机反馈
 }
 
-void LogicManager::_on_release() {
-    // 您可以在此定义松开按钮时的操作
+void LogicManager::_on_release() {  //在此定义松开按钮时的操作
     set_next_mode();
 }
 
@@ -79,11 +78,14 @@ void LogicManager::_logic_manager_task_static(void *arg) {
 
 void LogicManager::_logic_manager_main_loop() {
     while (true) {
+        // 更新当前模式逻辑
         if (current_mode_) {
             xSemaphoreTake(mode_mutex_, portMAX_DELAY);
             current_mode_->update();  // 更新模式逻辑
             xSemaphoreGive(mode_mutex_);
         }
+
+        // 检测按钮按下和松开事件
         bool current_pressed = pressure_sensor_->is_pressed();
         if (current_pressed && !previous_pressed_) {    // 检测到按下事件
             _on_press();
