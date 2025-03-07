@@ -20,9 +20,9 @@
 // 物理显示器类，任何 watch dial 都需要同一个物理显示器
 class PhysicalDisplay {
 public:
-    PhysicalDisplay();
+    explicit PhysicalDisplay(lv_display_rotation_t screen_rotation = LV_DISPLAY_ROTATION_270);
 
-    lv_obj_t *get_screen(); // 获取屏幕对象
+    [[nodiscard]] lv_obj_t *get_screen() const; // 获取屏幕对象
 
 private:
     lv_obj_t *screen_;

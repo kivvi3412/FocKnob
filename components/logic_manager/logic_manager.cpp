@@ -8,16 +8,16 @@ LogicManager::LogicManager(PressureSensor *pressure_sensor, FocDriver *foc_drive
     pressure_sensor_ = pressure_sensor;
     foc_driver_ = foc_driver;
     mode_mutex_ = xSemaphoreCreateMutex();
-    xTaskCreatePinnedToCore(_logic_manager_task_static, "logic_manager_task", 4096, this, 0, NULL, 1);
+    xTaskCreatePinnedToCore(_logic_manager_task_static, "logic_manager_task", 4096, this, 0, nullptr, 1);
 }
 
 void LogicManager::set_mode(LogicMode *mode) {
     xSemaphoreTake(mode_mutex_, portMAX_DELAY);
     if (current_mode_) {
-        current_mode_->destroy();  // 销毁当前模式
+        current_mode_->destroy(); // 销毁当前模式
     }
     current_mode_ = mode;
-    current_mode_->init();  // 初始化新模式
+    current_mode_->init(); // 初始化新模式
     xSemaphoreGive(mode_mutex_);
 }
 
@@ -57,17 +57,19 @@ void LogicManager::set_next_mode() {
 }
 
 
-void LogicManager::_on_press() {    // 震动反馈
-    current_mode_->stop_motor();  // 按下按钮, 停止当前电机旋钮反馈( 模拟按键按下 )
+void LogicManager::_on_press() const {
+    // 震动反馈
+    current_mode_->stop_motor(); // 按下按钮, 停止当前电机旋钮反馈( 模拟按键按下 )
     foc_driver_->set_dq(0, PRESS_SHOCKPROOFNESS);
     vTaskDelay(pdMS_TO_TICKS(1));
     foc_driver_->set_dq(0, -PRESS_SHOCKPROOFNESS);
     vTaskDelay(pdMS_TO_TICKS(1));
     foc_driver_->set_free();
-    current_mode_->resume_motor();  // 启动旋钮电机反馈
+    current_mode_->resume_motor(); // 启动旋钮电机反馈
 }
 
-void LogicManager::_on_release() {  //在此定义松开按钮时的操作
+void LogicManager::_on_release() {
+    //在此定义松开按钮时的操作
     set_next_mode();
 }
 
@@ -81,21 +83,19 @@ void LogicManager::_logic_manager_main_loop() {
         // 更新当前模式逻辑
         if (current_mode_) {
             xSemaphoreTake(mode_mutex_, portMAX_DELAY);
-            current_mode_->update();  // 更新模式逻辑
+            current_mode_->update(); // 更新模式逻辑
             xSemaphoreGive(mode_mutex_);
         }
 
         // 检测按钮按下和松开事件
         bool current_pressed = pressure_sensor_->is_pressed();
-        if (current_pressed && !previous_pressed_) {    // 检测到按下事件
-            _on_press();
-        } else if (!current_pressed && previous_pressed_) {     // 检测到松开事件
-            _on_release();
+        if (current_pressed && !previous_pressed_) {
+            // 检测到按下事件
+            this->_on_press();
+        } else if (!current_pressed && previous_pressed_) {
+            // 检测到松开事件
+            this->_on_release();
         }
         previous_pressed_ = current_pressed;
     }
 }
-
-
-
-

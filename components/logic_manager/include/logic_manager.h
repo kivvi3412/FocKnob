@@ -41,7 +41,7 @@ private:
 
     bool previous_pressed_ = false;
 
-    void _on_press();
+    void _on_press() const;
 
     void _on_release();
 

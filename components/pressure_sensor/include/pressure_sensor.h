@@ -21,7 +21,7 @@ public:
 
 private:
     // 私有方法
-    long _hx711_read(); // 读取 HX711 原始数据
+    [[nodiscard]] long _hx711_read() const; // 读取 HX711 原始数据
     void _scale_loop(); // 定时器回调函数, 用于更新 current_weight_
 
     // 静态定时器回调函数

@@ -9,21 +9,22 @@ StartingUpMode::StartingUpMode(FocDriver *driver, PhysicalDisplay *display) {
     physical_display_ = display;
 }
 
+StartingUpMode::~StartingUpMode() {
+    this->StartingUpMode::destroy();
+}
+
 void StartingUpMode::init() {
     init_screen_ = new DisplayInit(physical_display_);
     init_screen_->init(); // 初始化开机动画
     vTaskDelay(pdMS_TO_TICKS(200));
     init_screen_->set_main_info_text("Motor Calibration...");
-    foc_driver_->bsp_bridge_driver_enable(true);   // 使能电机驱动
+    foc_driver_->bsp_bridge_driver_enable(true); // 使能电机驱动
     foc_driver_->foc_motor_calibrate();
     init_screen_->set_main_info_text("Done");
     vTaskDelay(pdMS_TO_TICKS(500)); // 等待校准后电机稳定
 }
 
-void StartingUpMode::update() {}
-
-StartingUpMode::~StartingUpMode() {
-    init_screen_->destroy();
+void StartingUpMode::update() {
 }
 
 void StartingUpMode::stop_motor() {
@@ -31,12 +32,14 @@ void StartingUpMode::stop_motor() {
 }
 
 void StartingUpMode::resume_motor() {
-
 }
 
 void StartingUpMode::destroy() {
     foc_driver_->set_free();
-    init_screen_->destroy();
+    if (init_screen_) {
+        init_screen_->destroy();
+        delete init_screen_;
+    }
 }
 
 
@@ -46,7 +49,7 @@ UnboundedMode::UnboundedMode(RotaryKnob *knob, PhysicalDisplay *display) {
 }
 
 UnboundedMode::~UnboundedMode() {
-    display_demo_->destroy();
+    this->UnboundedMode::destroy();
 }
 
 void UnboundedMode::init() {
@@ -59,7 +62,7 @@ void UnboundedMode::init() {
 void UnboundedMode::update() {
     float current_radian = rotary_knob_->get_current_radian();
     display_demo_->set_pointer_radian(current_radian);
-    display_demo_->set_main_info_text(int(current_radian));
+    display_demo_->set_main_info_text(static_cast<int>(current_radian));
 }
 
 void UnboundedMode::stop_motor() {
@@ -67,12 +70,14 @@ void UnboundedMode::stop_motor() {
 }
 
 void UnboundedMode::resume_motor() {
-
 }
 
 void UnboundedMode::destroy() {
-    display_demo_->destroy();
     rotary_knob_->stop();
+    if (display_demo_) {
+        display_demo_->destroy();
+        delete display_demo_;
+    }
 }
 
 
@@ -82,7 +87,7 @@ BoundedMode::BoundedMode(RotaryKnob *knob, PhysicalDisplay *display) {
 }
 
 BoundedMode::~BoundedMode() {
-    display_demo_->destroy();
+    this->BoundedMode::destroy();
 }
 
 void BoundedMode::init() {
@@ -107,11 +112,11 @@ void BoundedMode::update() {
         display_demo_->set_pressure_feedback_arc(bound_range_, current_radian);
         display_demo_->set_background_board_percent(100);
     } else {
-        float current_pointer = (current_radian + bound_range_) / (2 * bound_range_) * float(bound_range_display_ - 1);
+        float current_pointer = (current_radian + bound_range_) / (2 * bound_range_) * static_cast<float>(bound_range_display_ - 1);
         int rounded_value = static_cast<int>(std::round(current_pointer));
         display_demo_->set_pointer_radian(current_radian);
         display_demo_->set_main_info_text(rounded_value);
-//        display_demo_->set_pressure_feedback_arc(0, 0);
+        display_demo_->set_pressure_feedback_arc(0, 0);
         display_demo_->set_background_board_percent(rounded_value * 100 / (bound_range_display_ - 1));
     }
 }
@@ -125,8 +130,11 @@ void BoundedMode::resume_motor() {
 }
 
 void BoundedMode::destroy() {
-    display_demo_->destroy();
     rotary_knob_->stop();
+    if (display_demo_) {
+        display_demo_->destroy();
+        delete display_demo_;
+    }
 }
 
 
@@ -136,7 +144,7 @@ SwitchMode::SwitchMode(RotaryKnob *knob, PhysicalDisplay *display) {
 }
 
 SwitchMode::~SwitchMode() {
-    display_demo_->destroy();
+    this->SwitchMode::destroy();
 }
 
 void SwitchMode::init() {
@@ -161,7 +169,7 @@ void SwitchMode::update() {
         display_demo_->set_pressure_feedback_arc(bound_range_, current_radian);
         display_demo_->set_background_board_percent(100);
     } else {
-        float current_pointer = (current_radian + bound_range_) / (2 * bound_range_) * float(bound_range_display_ - 1);
+        float current_pointer = (current_radian + bound_range_) / (2 * bound_range_) * static_cast<float>(bound_range_display_ - 1);
         int rounded_value = static_cast<int>(std::round(current_pointer));
 
         display_demo_->set_pointer_radian(current_radian);
@@ -185,14 +193,21 @@ void SwitchMode::resume_motor() {
 }
 
 void SwitchMode::destroy() {
-    display_demo_->destroy();
     rotary_knob_->stop();
+    if (display_demo_) {
+        display_demo_->destroy();
+        delete display_demo_;
+    }
 }
 
 
 AttractorMode::AttractorMode(RotaryKnob *knob, PhysicalDisplay *display) {
     rotary_knob_ = knob;
     physical_display_ = display;
+}
+
+AttractorMode::~AttractorMode() {
+    this->AttractorMode::destroy();
 }
 
 void AttractorMode::init() {
@@ -212,11 +227,6 @@ void AttractorMode::update() {
 }
 
 
-AttractorMode::~AttractorMode() {
-    display_demo_->destroy();
-    rotary_knob_->stop();
-}
-
 void AttractorMode::stop_motor() {
     rotary_knob_->stop();
 }
@@ -226,6 +236,9 @@ void AttractorMode::resume_motor() {
 }
 
 void AttractorMode::destroy() {
-    display_demo_->destroy();
     rotary_knob_->stop();
+    if (display_demo_) {
+        display_demo_->destroy();
+        delete display_demo_;
+    }
 }

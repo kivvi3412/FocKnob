@@ -19,14 +19,14 @@ void activity_monitor(void *arg) {
      */
 
     // 分配足够大的缓冲区来存储任务统计信息
-    char *task_stats_buffer = (char *) malloc(4096);
+    char *task_stats_buffer = static_cast<char *>(malloc(4096));
     if (task_stats_buffer == nullptr) {
         printf("无法分配内存来存储任务统计信息\n");
         return;
     }
 
-    while (1) {
-//         vTaskList(task_stats_buffer);   // 可以查看任务绑定在哪个CPU上了
+    while (true) {
+        // vTaskList(task_stats_buffer);   // 可以查看任务绑定在哪个CPU上了
         vTaskGetRunTimeStats(task_stats_buffer);    // 可以看CPU占用率
         printf("任务名\t\t运行时间\t\tCPU使用率 (%%) \n");
         printf("%s\n", task_stats_buffer);
@@ -60,6 +60,6 @@ extern "C" void app_main() {
 
     logic_manager->set_mode_by_name("UnboundedMode");
 
-    xTaskCreatePinnedToCore(activity_monitor, "activity_monitor", 4096, NULL, 1, NULL, 1);
+    // xTaskCreatePinnedToCore(activity_monitor, "activity_monitor", 4096, nullptr, 1, nullptr, 1);
 }
 
