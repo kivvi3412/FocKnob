@@ -24,15 +24,15 @@ void DisplayInit::init() {
 
     ui_Screen1 = lv_obj_create(root_scr);
     lv_obj_remove_flag(ui_Screen1, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_size(ui_Screen1, 240, 240);  // 屏幕大小
-    lv_obj_set_align(ui_Screen1, LV_ALIGN_CENTER);  // 中心对齐
-    lv_obj_set_style_bg_color(ui_Screen1, lv_color_black(), LV_PART_MAIN | LV_STATE_DEFAULT);   // 背景色
-    lv_obj_set_style_border_width(ui_Screen1, 0, LV_PART_MAIN | LV_STATE_DEFAULT);  // 边框宽度
-    lv_obj_set_style_pad_all(ui_Screen1, 0, LV_PART_MAIN | LV_STATE_DEFAULT);   // 内边距
+    lv_obj_set_size(ui_Screen1, 240, 240); // 屏幕大小
+    lv_obj_set_align(ui_Screen1, LV_ALIGN_CENTER); // 中心对齐
+    lv_obj_set_style_bg_color(ui_Screen1, lv_color_black(), LV_PART_MAIN | LV_STATE_DEFAULT); // 背景色
+    lv_obj_set_style_border_width(ui_Screen1, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // 边框宽度
+    lv_obj_set_style_pad_all(ui_Screen1, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // 内边距
 
     ui_Label1 = lv_label_create(ui_Screen1);
-    lv_obj_set_width(ui_Label1, LV_SIZE_CONTENT);  /// 1
-    lv_obj_set_height(ui_Label1, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_width(ui_Label1, LV_SIZE_CONTENT); /// 1
+    lv_obj_set_height(ui_Label1, LV_SIZE_CONTENT); /// 1
     lv_obj_set_align(ui_Label1, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label1, "Initializing...");
     lv_obj_set_style_text_color(ui_Label1, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -72,23 +72,23 @@ void DisplayDemo::init() {
 
     ui_Screen1 = lv_obj_create(root_scr);
     lv_obj_remove_flag(ui_Screen1, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_size(ui_Screen1, 240, 240);  // 屏幕大小
-    lv_obj_set_align(ui_Screen1, LV_ALIGN_CENTER);  // 中心对齐
-    lv_obj_set_style_bg_color(ui_Screen1, lv_color_black(), LV_PART_MAIN | LV_STATE_DEFAULT);   // 背景色
-    lv_obj_set_style_border_width(ui_Screen1, 0, LV_PART_MAIN | LV_STATE_DEFAULT);  // 边框宽度
-    lv_obj_set_style_pad_all(ui_Screen1, 0, LV_PART_MAIN | LV_STATE_DEFAULT);   // 内边距
+    lv_obj_set_size(ui_Screen1, 240, 240); // 屏幕大小
+    lv_obj_set_align(ui_Screen1, LV_ALIGN_CENTER); // 中心对齐
+    lv_obj_set_style_bg_color(ui_Screen1, lv_color_black(), LV_PART_MAIN | LV_STATE_DEFAULT); // 背景色
+    lv_obj_set_style_border_width(ui_Screen1, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // 边框宽度
+    lv_obj_set_style_pad_all(ui_Screen1, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // 内边距
 
     background_board_ = lv_obj_create(ui_Screen1);
     lv_obj_set_size(background_board_, SPI_LCD_V_RES, SPI_LCD_H_RES); // 100x100的正方形
-    lv_obj_set_align(background_board_, LV_ALIGN_TOP_MID);  // 中心对齐
-    lv_obj_set_style_bg_color(background_board_, lv_color_hex(0x3D2BC0), LV_PART_MAIN | LV_STATE_DEFAULT);   // 背景色
-    lv_obj_set_style_border_width(background_board_, 0, LV_PART_MAIN | LV_STATE_DEFAULT);  // 边框宽度
-    lv_obj_set_style_pad_all(background_board_, 0, LV_PART_MAIN | LV_STATE_DEFAULT);   // 内边距
+    lv_obj_set_align(background_board_, LV_ALIGN_TOP_MID); // 中心对齐
+    lv_obj_set_style_bg_color(background_board_, lv_color_hex(0x3D2BC0), LV_PART_MAIN | LV_STATE_DEFAULT); // 背景色
+    lv_obj_set_style_border_width(background_board_, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // 边框宽度
+    lv_obj_set_style_pad_all(background_board_, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // 内边距
     lv_obj_set_style_radius(background_board_, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // 去除圆角
     lv_obj_set_y(background_board_, SPI_LCD_H_RES); // 放到最下面，也就是显示 0%, y = 0 时显示 100%
 
 
-    ui_nostylearc = lv_arc_create(ui_Screen1);  // 创建指针
+    ui_nostylearc = lv_arc_create(ui_Screen1); // 创建指针
     lv_obj_set_width(ui_nostylearc, 220);
     lv_obj_set_height(ui_nostylearc, 220);
     lv_obj_set_align(ui_nostylearc, LV_ALIGN_CENTER);
@@ -102,6 +102,7 @@ void DisplayDemo::init() {
 
     lv_obj_set_style_bg_color(ui_nostylearc, lv_color_hex(0x5455F4), LV_PART_KNOB | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_nostylearc, 255, LV_PART_KNOB | LV_STATE_DEFAULT);
+    lv_obj_add_flag(ui_nostylearc, LV_OBJ_FLAG_HIDDEN);
 
     pressure_feedback_arc_ = lv_arc_create(ui_Screen1); // 创建压力反馈弧
     lv_obj_set_width(pressure_feedback_arc_, 220);
@@ -125,12 +126,12 @@ void DisplayDemo::init() {
     lv_obj_set_align(ui_textContainer1, LV_ALIGN_CENTER);
     lv_obj_set_flex_flow(ui_textContainer1, LV_FLEX_FLOW_COLUMN_WRAP);
     lv_obj_set_flex_align(ui_textContainer1, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_remove_flag(ui_textContainer1, LV_OBJ_FLAG_CLICKABLE);    /// Flags
-    lv_obj_remove_flag(ui_textContainer1, LV_OBJ_FLAG_SCROLLABLE);    /// Flags
+    lv_obj_remove_flag(ui_textContainer1, LV_OBJ_FLAG_CLICKABLE); /// Flags
+    lv_obj_remove_flag(ui_textContainer1, LV_OBJ_FLAG_SCROLLABLE); /// Flags
 
     ui_digitinfo = lv_label_create(ui_textContainer1);
-    lv_obj_set_width(ui_digitinfo, LV_SIZE_CONTENT);  /// 10
-    lv_obj_set_height(ui_digitinfo, LV_SIZE_CONTENT);   /// 10
+    lv_obj_set_width(ui_digitinfo, LV_SIZE_CONTENT); /// 10
+    lv_obj_set_height(ui_digitinfo, LV_SIZE_CONTENT); /// 10
     lv_obj_set_align(ui_digitinfo, LV_ALIGN_CENTER);
     lv_obj_set_flex_flow(ui_digitinfo, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(ui_digitinfo, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
@@ -138,8 +139,8 @@ void DisplayDemo::init() {
     lv_obj_set_style_text_font(ui_digitinfo, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_textinfo = lv_label_create(ui_textContainer1);
-    lv_obj_set_width(ui_textinfo, LV_SIZE_CONTENT);  /// 1
-    lv_obj_set_height(ui_textinfo, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_width(ui_textinfo, LV_SIZE_CONTENT); /// 1
+    lv_obj_set_height(ui_textinfo, LV_SIZE_CONTENT); /// 1
     lv_obj_set_x(ui_textinfo, 0);
     lv_obj_set_y(ui_textinfo, 30);
     lv_obj_set_align(ui_textinfo, LV_ALIGN_CENTER);
@@ -154,6 +155,16 @@ void DisplayDemo::destroy() {
         lv_obj_del(ui_Screen1);
         lvgl_port_unlock();
     }
+}
+
+void DisplayDemo::show_pointer(bool show) const {
+    lvgl_port_lock(0);
+    if (show) {
+        lv_obj_clear_flag(ui_nostylearc, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(ui_nostylearc, LV_OBJ_FLAG_HIDDEN);
+    }
+    lvgl_port_unlock();
 }
 
 void DisplayDemo::set_pointer_radian(float radian) {
@@ -310,7 +321,8 @@ int DisplayDemo::_positive_fmod(int x, int y) {
     return (mod < 0) ? (mod + y) : mod;
 }
 
-void DisplayDemo::_add_clock_ticks(DisplayDemo::ClockLineInfo *l_info) {    // 需要外部加锁使用
+void DisplayDemo::_add_clock_ticks(DisplayDemo::ClockLineInfo *l_info) {
+    // 需要外部加锁使用
     float r = (float) SPI_LCD_H_RES / 2;
 
     // radius 是在某个角度上，画一条直线，直线由外向内延伸长度 length, 求出 (x1, y1) ~ (x2, y2) (仅画一根线)

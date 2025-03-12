@@ -9,10 +9,10 @@ public:
     explicit RotaryKnob(FocDriver *focDriver, AS5600 *as5600);
 
     void stop();    // 停止旋钮
-    void attractor(int attractor_num, bool reset_custom_pos);  // 设置棘轮吸附模式
-    void attractor_with_rebound(int attractor_num, float left_rad, float right_rad, bool reset_custom_pos); // 设置棘轮吸附模式，超出边界后反弹 (
-    void damping(float damping_gain, bool reset_custom_pos);   // 设置阻尼模式 damping_gain 阻尼系数
-    void damping_with_rebound(float damping_gain, float left_rad, float right_rad, bool reset_custom_pos); // 设置阻尼模式，超出边界后反弹
+    void attractor(int attractor_num, bool reset_custom_pos, float current_radian);  // 设置棘轮吸附模式
+    void attractor_with_rebound(int attractor_num, float left_rad, float right_rad, bool reset_custom_pos, float current_radian); // 设置棘轮吸附模式，超出边界后反弹
+    void damping(float damping_gain, bool reset_custom_pos, float current_radian);   // 设置阻尼模式 damping_gain 阻尼系数
+    void damping_with_rebound(float damping_gain, float left_rad, float right_rad, bool reset_custom_pos, float current_radian); // 设置阻尼模式，超出边界后反弹
     [[nodiscard]] int attractor_get_pos() const;
     [[nodiscard]] float damping_get_pos() const;
     [[nodiscard]] float get_current_radian() const;

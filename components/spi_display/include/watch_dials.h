@@ -42,6 +42,8 @@ public:
 
     void destroy() override;
 
+    void show_pointer(bool show) const;   // 是否显示指针
+
     void set_pointer_radian(float radian);
 
     void set_main_info_text(int value);

@@ -16,11 +16,11 @@ class LogicMode {
 public:
     virtual ~LogicMode() = default;
 
-    virtual void init() = 0;  // 初始化模式
-    virtual void destroy() = 0;  // 销毁模式
-    virtual void update() = 0;  // 更新模式逻辑
-    virtual void stop_motor() = 0;  // 临时释放电机反馈，这样可以给其他东西用
-    virtual void resume_motor() = 0;  // 恢复旋钮对电机控制
+    virtual void init() = 0; // 初始化模式
+    virtual void destroy() = 0; // 销毁模式
+    virtual void update() = 0; // 更新模式逻辑
+    virtual void stop_motor() = 0; // 临时释放电机反馈，这样可以给其他东西用
+    virtual void resume_motor() = 0; // 恢复旋钮对电机控制
 };
 
 /*
@@ -69,6 +69,7 @@ public:
     void resume_motor() override;
 
 private:
+    float current_radian_ = 0;
     RotaryKnob *rotary_knob_;
     PhysicalDisplay *physical_display_;
     DisplayDemo *display_demo_{};
@@ -94,6 +95,7 @@ public:
     void resume_motor() override;
 
 private:
+    float current_radian_ = 0;
     float bound_range_ = M_PI_4;
     int bound_range_display_ = 11;
 
@@ -122,6 +124,7 @@ public:
     void resume_motor() override;
 
 private:
+    float current_radian_ = 0;
     float bound_range_ = M_PI / 6.0f;
     int bound_range_display_ = 2;
 
@@ -151,6 +154,7 @@ public:
     void resume_motor() override;
 
 private:
+    float current_radian_ = 0;
     RotaryKnob *rotary_knob_;
     PhysicalDisplay *physical_display_;
     DisplayDemo *display_demo_{};
