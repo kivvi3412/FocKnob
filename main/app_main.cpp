@@ -7,6 +7,7 @@
 #include "logic_mode.h"
 #include "generic_knob_mode.h"
 #include "pressure_sensor.h"
+#include "wifi_mqtt_driver.h"
 
 void activity_monitor(void *arg) {
     /*
@@ -28,14 +29,28 @@ void activity_monitor(void *arg) {
 
     while (true) {
         // vTaskList(task_stats_buffer);   // 可以查看任务绑定在哪个CPU上了
-        vTaskGetRunTimeStats(task_stats_buffer); // 可以看CPU占用率
-        printf("任务名\t\t运行时间\t\tCPU使用率 (%%) \n");
-        printf("%s\n", task_stats_buffer);
+        // vTaskGetRunTimeStats(task_stats_buffer); // 可以看CPU占用率
+        // printf("任务名\t\t运行时间\t\tCPU使用率 (%%) \n");
+        // printf("%s\n", task_stats_buffer);
+
+        size_t free_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+        size_t free_spiram = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+        size_t free_dma = heap_caps_get_free_size(MALLOC_CAP_DMA);
+        size_t free_8bit = heap_caps_get_free_size(MALLOC_CAP_8BIT);
+
+        ESP_LOGI("MEM_CHECK", "Free Internal RAM : %d KB", free_internal / 1024);
+        ESP_LOGI("MEM_CHECK", "Free SPIRAM       : %d KB", free_spiram / 1024);
+        ESP_LOGI("MEM_CHECK", "Free DMA-capable  : %d KB", free_dma / 1024);
+        ESP_LOGI("MEM_CHECK", "Free 8Bit RAM     : %d KB\n", free_8bit / 1024);
+
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
 extern "C" void app_main() {
+    xTaskCreatePinnedToCore(activity_monitor, "activity_monitor", 4096, nullptr, 1, nullptr, 1);
+
+    static WifiMqttDriver wifiMqtt(WIFI_SSID, WIFI_PASSWORD, MQTT_URI, MQTT_USER, MQTT_PASS, MQTT_CLIENT_ID);
     auto *iic_master = new IICMaster(IIC_MASTER_NUM, IIC_MASTER_SDA_IO, IIC_MASTER_SCL_IO);
     auto *as5600 = new AS5600(iic_master->iic_master_get_bus_handle(), IIC_AS5600_ADDR);
     auto *foc_driver = new FocDriver(FOC_MCPWM_U_GPIO,
@@ -53,10 +68,8 @@ extern "C" void app_main() {
     // 设置开机模式
     logic_manager->set_mode(new StartingUpMode(foc_driver, physical_display));
 
-    // 注册模式
-    //
-    // 1) 灯光开关 Light On/Off
-    //
+
+    // 灯光开关 Light On/Off
     {
         KnobModeConfig cfg;
         cfg.displayText = "Light On/Off";
@@ -71,9 +84,7 @@ extern "C" void app_main() {
                                      new GenericKnobMode(rotary_knob, physical_display, cfg));
     }
 
-    //
-    // 2) 灯光亮度 Light Luminance
-    //
+    // 灯光亮度 Light Luminance
     {
         KnobModeConfig cfg;
         cfg.displayText = "Light Luminance";
@@ -87,10 +98,7 @@ extern "C" void app_main() {
                                      new GenericKnobMode(rotary_knob, physical_display, cfg));
     }
 
-    //
-    // 3) 空调开关 AC On/Off
-    //    与灯开关类似，仍是两档开关
-    //
+    // 空调开关 AC On/Off
     {
         KnobModeConfig cfg;
         cfg.displayText = "AC On/Off";
@@ -105,13 +113,7 @@ extern "C" void app_main() {
                                      new GenericKnobMode(rotary_knob, physical_display, cfg));
     }
 
-    //
-    // 4) 空调温度 AC Temperature
-    //    16 ~ 32度 => 一共17个值
-    //    角度范围：±120度(约 ±2.094395102 rad)
-    //    这时 steps=16，让离散值从 start_number(16) 到 16+16=32，共17个整数
-    //    行为：ATTRACTOR (多档吸引子)
-    //
+    // 空调温度 AC Temperature
     {
         KnobModeConfig cfg;
         cfg.displayText = "AC Temperature";
@@ -126,11 +128,7 @@ extern "C" void app_main() {
                                      new GenericKnobMode(rotary_knob, physical_display, cfg));
     }
 
-    //
-    // 5) 窗帘 Curtain
-    //    0~100%，带阻尼 + 有限范围
-    //    与“Light Luminance”类似
-    //
+    // 窗帘 Curtain
     {
         KnobModeConfig cfg;
         cfg.displayText = "Curtain";
@@ -145,6 +143,15 @@ extern "C" void app_main() {
     }
 
     logic_manager->set_mode_by_name("LightOnOff");
-
-    // xTaskCreatePinnedToCore(activity_monitor, "activity_monitor", 4096, nullptr, 1, nullptr, 1);
+    
+    wifiMqtt.connect();
+    std::string previous_mqtt_json_info;
+    while (true) {
+        std::string current_info = logic_manager->get_mode_info_mqtt_json();
+        if (current_info != previous_mqtt_json_info) {
+            previous_mqtt_json_info = current_info;
+            wifiMqtt.publishJson("/focknob/control", current_info, 0, false);
+        }
+        vTaskDelay(pdMS_TO_TICKS(150));
+    }
 }

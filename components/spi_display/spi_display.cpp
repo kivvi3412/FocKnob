@@ -20,7 +20,8 @@ PhysicalDisplay::PhysicalDisplay(lv_display_rotation_t screen_rotation) {
 
     ESP_LOGI(TAG, "Initialize SPI bus");
     constexpr spi_bus_config_t bus_config = GC9A01_PANEL_BUS_SPI_CONFIG(SPI_LCD_PCLK, SPI_LCD_MOSI,
-                                                                        SPI_LCD_H_RES * 80 * sizeof(uint16_t));
+                                                                        240 * 10 * sizeof(uint16_t)
+    );
     ESP_ERROR_CHECK(spi_bus_initialize(SPI_LCD_HOST, &bus_config, SPI_DMA_CH_AUTO));
 
     ESP_LOGI(TAG, "Install panel IO");
@@ -45,7 +46,13 @@ PhysicalDisplay::PhysicalDisplay(lv_display_rotation_t screen_rotation) {
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
     // 以上代码初始化了 SPI 总线、LCD IO 和 LCD 驱动，使 LCD 显示器处于开机状态
 
-    constexpr lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
+    constexpr lvgl_port_cfg_t lvgl_cfg = {
+        .task_priority = 4,
+        .task_stack = 6144,
+        .task_affinity = 0,
+        .task_max_sleep_ms = 500,
+        .timer_period_ms = 5,
+    };;
     ESP_ERROR_CHECK(lvgl_port_init(&lvgl_cfg));
 
     const lvgl_port_display_cfg_t disp_cfg = {

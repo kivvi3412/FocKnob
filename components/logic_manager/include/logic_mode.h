@@ -21,6 +21,7 @@ public:
     virtual void update() = 0; // 更新模式逻辑
     virtual void stop_motor() = 0; // 临时释放电机反馈，这样可以给其他东西用
     virtual void resume_motor() = 0; // 恢复旋钮对电机控制
+    virtual int get_current_step_index() { return 0; }
 };
 
 /*

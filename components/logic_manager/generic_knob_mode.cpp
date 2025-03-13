@@ -126,6 +126,7 @@ void GenericKnobMode::update() {
 
         // 显示
         displayDemo_->set_main_info_text(realValue);
+        current_step_index_ = realValue;
 
         // 进度条（相对 steps）
         float stepProgress = (float) stepIndex / (float) (config_.steps);
@@ -136,6 +137,7 @@ void GenericKnobMode::update() {
         int percent = static_cast<int>(std::round(progress * 100.0f));
         displayDemo_->set_main_info_text(percent);
         displayDemo_->set_background_board_percent(percent);
+        current_step_index_ = percent;
     }
 
     // 指针位置、压感弧
@@ -207,4 +209,8 @@ void GenericKnobMode::resume_motor() {
 
     // 如有需要，可在此设置一次指针(可选)
     // displayDemo_->set_pointer_radian(currentAngle_);
+}
+
+int GenericKnobMode::get_current_step_index() {
+    return current_step_index_;
 }
