@@ -211,7 +211,7 @@ void SwitchMode::stop_motor() {
 }
 
 void SwitchMode::resume_motor() {
-    rotary_knob_->attractor_with_rebound(2, -bound_range_, bound_range_, false, current_radian_);
+    rotary_knob_->attractor_with_rebound(bound_range_display_, -bound_range_, bound_range_, false, current_radian_);
 }
 
 void SwitchMode::destroy() {
@@ -255,7 +255,6 @@ void AttractorMode::update() {
     display_demo_->set_pointer_radian(current_radian_);
 }
 
-
 void AttractorMode::stop_motor() {
     rotary_knob_->stop();
 }
@@ -265,6 +264,352 @@ void AttractorMode::resume_motor() {
 }
 
 void AttractorMode::destroy() {
+    rotary_knob_->stop();
+    if (display_demo_) {
+        display_demo_->destroy();
+        delete display_demo_;
+    }
+}
+
+
+// Unity
+UnityLightSwitchMode::UnityLightSwitchMode(RotaryKnob *knob, PhysicalDisplay *display) {
+    rotary_knob_ = knob;
+    physical_display_ = display;
+}
+
+UnityLightSwitchMode::~UnityLightSwitchMode() {
+    this->UnityLightSwitchMode::destroy();
+}
+
+void UnityLightSwitchMode::init() {
+    display_demo_ = new DisplayDemo(physical_display_);
+    display_demo_->init();
+    display_demo_->set_secondary_info_text("Light On/Off");
+    display_demo_->create_clock_ticks_manual(-bound_range_, 15, lv_color_white());
+    display_demo_->create_clock_ticks_manual(bound_range_, 15, lv_color_white());
+    if (current_radian_ == 0) {
+        rotary_knob_->attractor_with_rebound(2, -bound_range_, bound_range_, true, 0);
+        display_demo_->set_pointer_radian(-bound_range_);
+    } else {
+        rotary_knob_->attractor_with_rebound(2, -bound_range_, bound_range_, false, current_radian_);
+        display_demo_->set_pointer_radian(current_radian_);
+    }
+    display_demo_->show_pointer(true);
+}
+
+void UnityLightSwitchMode::destroy() {
+    rotary_knob_->stop();
+    if (display_demo_) {
+        display_demo_->destroy();
+        delete display_demo_;
+    }
+}
+
+void UnityLightSwitchMode::update() {
+    current_radian_ = rotary_knob_->get_current_radian();
+    if (current_radian_ < -(bound_range_ + 0.05)) {
+        display_demo_->set_pointer_radian(-bound_range_);
+        display_demo_->set_main_info_text(0);
+        display_demo_->set_pressure_feedback_arc(-bound_range_, current_radian_);
+        display_demo_->set_background_board_percent(0);
+    } else if (current_radian_ > (bound_range_ + 0.05)) {
+        display_demo_->set_pointer_radian(bound_range_);
+        display_demo_->set_main_info_text(1);
+        display_demo_->set_pressure_feedback_arc(bound_range_, current_radian_);
+        display_demo_->set_background_board_percent(100);
+    } else {
+        float current_pointer = (current_radian_ + bound_range_) / (2 * bound_range_) * static_cast<float>(
+                                    bound_range_display_ - 1);
+        int rounded_value = static_cast<int>(std::round(current_pointer));
+
+        display_demo_->set_pointer_radian(current_radian_);
+        display_demo_->set_pressure_feedback_arc(0, 0);
+        if (rounded_value == 0) {
+            display_demo_->set_main_info_text(0);
+            display_demo_->set_background_board_percent(0);
+            light_switch_status_ = false;
+        } else {
+            display_demo_->set_main_info_text(1);
+            display_demo_->set_background_board_percent(100);
+            light_switch_status_ = true;
+        }
+    }
+}
+
+void UnityLightSwitchMode::stop_motor() {
+    rotary_knob_->stop();
+}
+
+void UnityLightSwitchMode::resume_motor() {
+    rotary_knob_->attractor_with_rebound(bound_range_display_, -bound_range_, bound_range_, false, current_radian_);
+}
+
+
+UnityACSwitchMode::UnityACSwitchMode(RotaryKnob *knob, PhysicalDisplay *display) {
+    rotary_knob_ = knob;
+    physical_display_ = display;
+}
+
+UnityACSwitchMode::~UnityACSwitchMode() {
+    this->UnityACSwitchMode::destroy();
+}
+
+void UnityACSwitchMode::init() {
+    display_demo_ = new DisplayDemo(physical_display_);
+    display_demo_->init();
+    display_demo_->set_secondary_info_text("AC On/Off");
+    display_demo_->create_clock_ticks_manual(-bound_range_, 15, lv_color_white());
+    display_demo_->create_clock_ticks_manual(bound_range_, 15, lv_color_white());
+    if (current_radian_ == 0) {
+        rotary_knob_->attractor_with_rebound(2, -bound_range_, bound_range_, true, 0);
+        display_demo_->set_pointer_radian(-bound_range_);
+    } else {
+        rotary_knob_->attractor_with_rebound(2, -bound_range_, bound_range_, false, current_radian_);
+        display_demo_->set_pointer_radian(current_radian_);
+    }
+    display_demo_->show_pointer(true);
+}
+
+void UnityACSwitchMode::destroy() {
+    rotary_knob_->stop();
+    if (display_demo_) {
+        display_demo_->destroy();
+        delete display_demo_;
+    }
+}
+
+void UnityACSwitchMode::update() {
+    current_radian_ = rotary_knob_->get_current_radian();
+    if (current_radian_ < -(bound_range_ + 0.05)) {
+        display_demo_->set_pointer_radian(-bound_range_);
+        display_demo_->set_main_info_text(0);
+        display_demo_->set_pressure_feedback_arc(-bound_range_, current_radian_);
+        display_demo_->set_background_board_percent(0);
+    } else if (current_radian_ > (bound_range_ + 0.05)) {
+        display_demo_->set_pointer_radian(bound_range_);
+        display_demo_->set_main_info_text(1);
+        display_demo_->set_pressure_feedback_arc(bound_range_, current_radian_);
+        display_demo_->set_background_board_percent(100);
+    } else {
+        float current_pointer = (current_radian_ + bound_range_) / (2 * bound_range_) * static_cast<float>(
+                                    bound_range_display_ - 1);
+        int rounded_value = static_cast<int>(std::round(current_pointer));
+
+        display_demo_->set_pointer_radian(current_radian_);
+        display_demo_->set_pressure_feedback_arc(0, 0);
+        if (rounded_value == 0) {
+            display_demo_->set_main_info_text(0);
+            display_demo_->set_background_board_percent(0);
+            ac_switch_status_ = false;
+        } else {
+            display_demo_->set_main_info_text(1);
+            display_demo_->set_background_board_percent(100);
+            ac_switch_status_ = true;
+        }
+    }
+}
+
+void UnityACSwitchMode::stop_motor() {
+    rotary_knob_->stop();
+}
+
+void UnityACSwitchMode::resume_motor() {
+    rotary_knob_->attractor_with_rebound(bound_range_display_, -bound_range_, bound_range_, false, current_radian_);
+}
+
+
+UnityACTemperatureMode::UnityACTemperatureMode(RotaryKnob *knob, PhysicalDisplay *display) {
+    rotary_knob_ = knob;
+    physical_display_ = display;
+}
+
+UnityACTemperatureMode::~UnityACTemperatureMode() {
+    this->UnityACTemperatureMode::destroy();
+}
+
+void UnityACTemperatureMode::init() {
+    display_demo_ = new DisplayDemo(physical_display_);
+    display_demo_->init();
+    display_demo_->set_secondary_info_text("AC Temperature\n16-32");
+    display_demo_->create_clock_ticks_range(bound_range_display_, -bound_range_, bound_range_, 15, lv_color_white());
+    if (current_radian_ == 0) {
+        rotary_knob_->attractor_with_rebound(bound_range_display_, -bound_range_, bound_range_, true, 0, attractor_kp_);
+        display_demo_->set_pointer_radian(-bound_range_);
+    } else {
+        rotary_knob_->attractor_with_rebound(bound_range_display_, -bound_range_, bound_range_, false, current_radian_,
+                                             attractor_kp_);
+        display_demo_->set_pointer_radian(current_radian_);
+    }
+    display_demo_->show_pointer(true);
+}
+
+void UnityACTemperatureMode::destroy() {
+    rotary_knob_->stop();
+    if (display_demo_) {
+        display_demo_->destroy();
+        delete display_demo_;
+    }
+}
+
+void UnityACTemperatureMode::update() {
+    current_radian_ = rotary_knob_->get_current_radian();
+    if (current_radian_ < -(bound_range_ + 0.05)) {
+        display_demo_->set_pointer_radian(-bound_range_);
+        display_demo_->set_main_info_text(16);
+        display_demo_->set_pressure_feedback_arc(-bound_range_, current_radian_);
+        display_demo_->set_background_board_percent(0);
+    } else if (current_radian_ > (bound_range_ + 0.05)) {
+        display_demo_->set_pointer_radian(bound_range_);
+        display_demo_->set_main_info_text(32);
+        display_demo_->set_pressure_feedback_arc(bound_range_, current_radian_);
+        display_demo_->set_background_board_percent(100);
+    } else {
+        float current_pointer = (current_radian_ + bound_range_) / (2 * bound_range_) * static_cast<float>(
+                                    bound_range_display_ - 1);
+        int rounded_value = static_cast<int>(std::round(current_pointer));
+
+        display_demo_->set_pointer_radian(current_radian_);
+        display_demo_->set_pressure_feedback_arc(0, 0);
+        display_demo_->set_main_info_text(rounded_value + 16);
+        display_demo_->set_background_board_percent(rounded_value * 100 / (bound_range_display_ - 1));
+        ac_temperature_ = rounded_value + 16; // 16 ~ 32
+    }
+}
+
+void UnityACTemperatureMode::stop_motor() {
+    rotary_knob_->stop();
+}
+
+void UnityACTemperatureMode::resume_motor() {
+    rotary_knob_->attractor_with_rebound(bound_range_display_, -bound_range_, bound_range_, false, current_radian_);
+}
+
+
+UnityLightLuminanceMode::UnityLightLuminanceMode(RotaryKnob *knob, PhysicalDisplay *display) {
+    rotary_knob_ = knob;
+    physical_display_ = display;
+}
+
+UnityLightLuminanceMode::~UnityLightLuminanceMode() {
+    this->UnityLightLuminanceMode::destroy();
+}
+
+void UnityLightLuminanceMode::init() {
+    display_demo_ = new DisplayDemo(physical_display_);
+    display_demo_->init();
+    display_demo_->set_secondary_info_text("Light Luminance");
+    display_demo_->create_clock_ticks_manual(-bound_range_, 15, lv_color_white());
+    display_demo_->create_clock_ticks_manual(bound_range_, 15, lv_color_white());
+    if (current_radian_ == 0) {
+        rotary_knob_->damping_with_rebound(damping_gain_, -bound_range_, bound_range_, true, 0);
+        display_demo_->set_pointer_radian(-bound_range_);
+    } else {
+        rotary_knob_->damping_with_rebound(damping_gain_, -bound_range_, bound_range_, false, current_radian_);
+        display_demo_->set_pointer_radian(current_radian_);
+    }
+    display_demo_->show_pointer(true);
+}
+
+void UnityLightLuminanceMode::update() {
+    current_radian_ = rotary_knob_->get_current_radian();
+    if (current_radian_ < -bound_range_) {
+        display_demo_->set_pointer_radian(-bound_range_);
+        display_demo_->set_main_info_text(0);
+        display_demo_->set_pressure_feedback_arc(-bound_range_, current_radian_);
+        display_demo_->set_background_board_percent(0);
+    } else if (current_radian_ > bound_range_) {
+        display_demo_->set_pointer_radian(bound_range_);
+        display_demo_->set_main_info_text(bound_range_display_ - 1);
+        display_demo_->set_pressure_feedback_arc(bound_range_, current_radian_);
+        display_demo_->set_background_board_percent(100);
+    } else {
+        float current_pointer = (current_radian_ + bound_range_) / (2 * bound_range_) * static_cast<float>(
+                                    bound_range_display_ - 1);
+        int rounded_value = static_cast<int>(std::round(current_pointer));
+        display_demo_->set_pointer_radian(current_radian_);
+        display_demo_->set_main_info_text(rounded_value);
+        display_demo_->set_pressure_feedback_arc(0, 0);
+        display_demo_->set_background_board_percent(rounded_value * 100 / (bound_range_display_ - 1));
+        light_luminance_ = rounded_value;
+    }
+}
+
+void UnityLightLuminanceMode::stop_motor() {
+    rotary_knob_->stop();
+}
+
+void UnityLightLuminanceMode::resume_motor() {
+    rotary_knob_->damping_with_rebound(damping_gain_, -bound_range_, bound_range_, false, current_radian_);
+}
+
+void UnityLightLuminanceMode::destroy() {
+    rotary_knob_->stop();
+    if (display_demo_) {
+        display_demo_->destroy();
+        delete display_demo_;
+    }
+}
+
+
+UnityCurtainPercentMode::UnityCurtainPercentMode(RotaryKnob *knob, PhysicalDisplay *display) {
+    rotary_knob_ = knob;
+    physical_display_ = display;
+}
+
+UnityCurtainPercentMode::~UnityCurtainPercentMode() {
+    this->UnityCurtainPercentMode::destroy();
+}
+
+void UnityCurtainPercentMode::init() {
+    display_demo_ = new DisplayDemo(physical_display_);
+    display_demo_->init();
+    display_demo_->set_secondary_info_text("Curtain");
+    display_demo_->create_clock_ticks_manual(-bound_range_, 15, lv_color_white());
+    display_demo_->create_clock_ticks_manual(bound_range_, 15, lv_color_white());
+    if (current_radian_ == 0) {
+        rotary_knob_->damping_with_rebound(damping_gain_, -bound_range_, bound_range_, true, 0);
+        display_demo_->set_pointer_radian(-bound_range_);
+    } else {
+        rotary_knob_->damping_with_rebound(damping_gain_, -bound_range_, bound_range_, false, current_radian_);
+        display_demo_->set_pointer_radian(current_radian_);
+    }
+    display_demo_->show_pointer(true);
+}
+
+void UnityCurtainPercentMode::update() {
+    current_radian_ = rotary_knob_->get_current_radian();
+    if (current_radian_ < -bound_range_) {
+        display_demo_->set_pointer_radian(-bound_range_);
+        display_demo_->set_main_info_text(0);
+        display_demo_->set_pressure_feedback_arc(-bound_range_, current_radian_);
+        display_demo_->set_background_board_percent(0);
+    } else if (current_radian_ > bound_range_) {
+        display_demo_->set_pointer_radian(bound_range_);
+        display_demo_->set_main_info_text(bound_range_display_ - 1);
+        display_demo_->set_pressure_feedback_arc(bound_range_, current_radian_);
+        display_demo_->set_background_board_percent(100);
+    } else {
+        float current_pointer = (current_radian_ + bound_range_) / (2 * bound_range_) * static_cast<float>(
+                                    bound_range_display_ - 1);
+        int rounded_value = static_cast<int>(std::round(current_pointer));
+        display_demo_->set_pointer_radian(current_radian_);
+        display_demo_->set_main_info_text(rounded_value);
+        display_demo_->set_pressure_feedback_arc(0, 0);
+        display_demo_->set_background_board_percent(rounded_value * 100 / (bound_range_display_ - 1));
+        curtain_percent_ = rounded_value;
+    }
+}
+
+void UnityCurtainPercentMode::stop_motor() {
+    rotary_knob_->stop();
+}
+
+void UnityCurtainPercentMode::resume_motor() {
+    rotary_knob_->damping_with_rebound(damping_gain_, -bound_range_, bound_range_, false, current_radian_);
+}
+
+void UnityCurtainPercentMode::destroy() {
     rotary_knob_->stop();
     if (display_demo_) {
         display_demo_->destroy();

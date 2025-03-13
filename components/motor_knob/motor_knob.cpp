@@ -36,10 +36,11 @@ void RotaryKnob::attractor(int attractor_num, bool reset_custom_pos, float curre
  * @brief 设置棘轮吸附模式，超出边界后反弹, 当前角度为0度，指向left_rad, 顺时针旋转pos增大，如果 a_num = 2 则有吸附点 0 和 1
  */
 void RotaryKnob::attractor_with_rebound(int attractor_num, float left_rad, float right_rad, bool reset_custom_pos,
-                                        float current_radian) {
+                                        float current_radian, float attractor_kp) {
     attractor_number_ = (attractor_num < 1) ? 1 : attractor_num - 1;
     left_boundary_rad_ = left_rad;
     right_boundary_rad_ = right_rad;
+    attractor_with_rebound_kp_ = attractor_kp;
 
     if (reset_custom_pos) {
         as5600_->set_custom_total_radian(left_rad); // 重置自定义总弧度
@@ -129,8 +130,7 @@ void RotaryKnob::_knob_loop() {
             attractor_current_pos_ = attractor_index;
             // 计算误差和控制力矩
             float error = target_rad - current_rad;
-            float kp = 150.0f;
-            float torque = _constrain(kp * error, -FOC_MCPWM_OUTPUT_LIMIT / 3.0f, FOC_MCPWM_OUTPUT_LIMIT / 3.0f);
+            float torque = _constrain(attractor_with_rebound_kp_ * error, -FOC_MCPWM_OUTPUT_LIMIT / 3.0f, FOC_MCPWM_OUTPUT_LIMIT / 3.0f);
             foc_driver_->set_dq(0, torque);
             break;
         }

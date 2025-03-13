@@ -53,12 +53,13 @@ extern "C" void app_main() {
     logic_manager->set_mode(new StartingUpMode(foc_driver, physical_display));
 
     // 注册模式
-    logic_manager->register_mode("UnboundedMode", new UnboundedMode(rotary_knob, physical_display));
-    logic_manager->register_mode("BoundedMode", new BoundedMode(rotary_knob, physical_display));
-    logic_manager->register_mode("SwitchMode", new SwitchMode(rotary_knob, physical_display));
-    logic_manager->register_mode("AttractorMode", new AttractorMode(rotary_knob, physical_display));
-
-    logic_manager->set_mode_by_name("UnboundedMode");
+    logic_manager->register_mode("LightOnOff", new UnityLightSwitchMode(rotary_knob, physical_display));
+    logic_manager->register_mode("LightLuminance", new UnityLightLuminanceMode(rotary_knob, physical_display));
+    logic_manager->register_mode("ACOnOff", new UnityACSwitchMode(rotary_knob, physical_display));
+    logic_manager->register_mode("ACTemperature", new UnityACTemperatureMode(rotary_knob, physical_display));
+    logic_manager->register_mode("Curtain", new UnityCurtainPercentMode(rotary_knob, physical_display));
+    
+    logic_manager->set_mode_by_name("LightOnOff");
 
     // xTaskCreatePinnedToCore(activity_monitor, "activity_monitor", 4096, nullptr, 1, nullptr, 1);
 }
