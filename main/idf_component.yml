@@ -17,3 +17,4 @@ dependencies:
   lvgl/lvgl: ^9.2.2
   espressif/esp_lcd_gc9a01: ^2.0.1
   espressif/esp_lvgl_port: ^2.4.4
+  bblanchon/arduinojson: ^7.3.1

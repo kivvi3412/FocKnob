@@ -43,4 +43,11 @@
 #define PRESS_THRESHOLD                 500.0f              // 按下阈值, 单位为克
 #define PRESS_SHOCKPROOFNESS            400                 // 震动强度反馈
 
+#define WIFI_SSID                       "AirPort-5G"
+#define WIFI_PASSWORD                   "###732###"
+#define MQTT_URI                        "mqtt://home.kivvi.me:1883"
+#define MQTT_USER                       "kivvi"
+#define MQTT_PASS                       "mqttpassword"
+#define MQTT_CLIENT_ID                  "foc_knob"
+
 #endif //FOCKNOB_PROJECT_CONF_H

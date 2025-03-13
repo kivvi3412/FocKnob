@@ -4,10 +4,13 @@
 // logic_manager.cpp
 #include "logic_manager.h"
 
+using namespace ArduinoJson;
+
 LogicManager::LogicManager(PressureSensor *pressure_sensor, FocDriver *foc_driver) {
     pressure_sensor_ = pressure_sensor;
     foc_driver_ = foc_driver;
     mode_mutex_ = xSemaphoreCreateMutex();
+    mode_info_mutex_ = xSemaphoreCreateMutex();
     xTaskCreatePinnedToCore(_logic_manager_task_static, "logic_manager_task", 4096, this, 0, nullptr, 1);
 }
 
@@ -62,6 +65,31 @@ void LogicManager::set_mode_info(const std::string &key, const std::string &valu
     xSemaphoreGive(mode_info_mutex_);
 }
 
+std::string LogicManager::get_mode_info_mqtt_json() {
+    // 生成 MQTT JSON 字符串
+    // cJSON *root = cJSON_CreateObject();
+    // cJSON *params = cJSON_CreateObject();
+    //
+    // cJSON_AddStringToObject(root, "method", "control");
+    // cJSON_AddStringToObject(root, "clientToken", "foc_knob");
+    //
+    // for (const auto &mode_info: mode_info_) {
+    //     cJSON_AddStringToObject(params, mode_info.first.c_str(), mode_info.second.c_str());
+    // }
+    // cJSON_AddItemToObject(root, "params", params);
+    // mode_info_mqtt_json_ = cJSON_Print(root);
+    // cJSON_Delete(root);
+    //
+    auto json = JsonDocument();
+    json["method"] = "control";
+    json["clientToken"] = "foc_knob";
+    for (const auto &mode_info: mode_info_) {
+        json[mode_info.first] = mode_info.second;
+    }
+    serializeJson(json, mode_info_mqtt_json_);
+    return mode_info_mqtt_json_;
+}
+
 void LogicManager::_on_press() const {
     // 震动反馈
     current_mode_->stop_motor(); // 按下按钮, 停止当前电机旋钮反馈( 模拟按键按下 )
@@ -90,6 +118,12 @@ void LogicManager::_logic_manager_main_loop() {
             xSemaphoreTake(mode_mutex_, portMAX_DELAY);
             current_mode_->update(); // 更新模式逻辑
             xSemaphoreGive(mode_mutex_);
+        }
+
+        if (!modes_.empty()) {
+            for (auto &mode: modes_) {
+                this->set_mode_info(mode.first, std::to_string(mode.second->get_current_step_index()));
+            }
         }
 
         // 检测按钮按下和松开事件
