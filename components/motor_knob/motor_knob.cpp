@@ -137,7 +137,7 @@ void RotaryKnob::_knob_loop() {
         case Mode::Damping: {
             damping_current_pos_ = current_rad;
             float velocity = as5600_->get_velocity_filter();
-            if (std::fabs(velocity) < 0.1f) {
+            if (std::fabs(velocity) < 1.0f) {
                 velocity = 0.0f;
             }
             float torque = -damping_gain_ * velocity;
@@ -159,7 +159,7 @@ void RotaryKnob::_knob_loop() {
             } else {
                 damping_current_pos_ = current_rad;
                 float velocity = as5600_->get_velocity_filter();
-                if (std::fabs(velocity) < 0.1f) {
+                if (std::fabs(velocity) < 1.0f) {
                     velocity = 0.0f;
                 }
                 float torque = -damping_gain_ * velocity;

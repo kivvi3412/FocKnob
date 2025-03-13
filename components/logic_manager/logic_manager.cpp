@@ -56,6 +56,11 @@ void LogicManager::set_next_mode() {
     xSemaphoreGive(mode_mutex_);
 }
 
+void LogicManager::set_mode_info(const std::string &key, const std::string &value) {
+    xSemaphoreTake(mode_info_mutex_, portMAX_DELAY);
+    mode_info_[key] = value;
+    xSemaphoreGive(mode_info_mutex_);
+}
 
 void LogicManager::_on_press() const {
     // 震动反馈
