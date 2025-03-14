@@ -24,7 +24,7 @@
 #define FOC_MCPWM_TIMER_RESOLUTION_HZ   80000000
 #define FOC_MCPWM_PERIOD                2000                // 最大力矩为 FOC_MCPWM_PERIOD / 2
 #define FOC_MCPWM_OUTPUT_LIMIT          (FOC_MCPWM_PERIOD / 2.0 - 1)
-#define FOC_MCPWM_CALIBRATE_VOLTAGE     (FOC_MCPWM_PERIOD / 20.0)
+#define FOC_MCPWM_CALIBRATE_VOLTAGE     (FOC_MCPWM_PERIOD / 10.0)
 #define FOC_MCPWM_STATIC_FRIC_TORQUE    28.0                // 电机启动静摩擦力矩
 #define FOC_LOW_PASS_FILTER_ALPHA       0.3
 

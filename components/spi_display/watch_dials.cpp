@@ -7,19 +7,18 @@
 #include <cmath>
 #include <esp_log.h>
 
-DisplayInit::DisplayInit(PhysicalDisplay *scr) {
+DisplayInit::DisplayInit(PhysicalDisplay* scr)
+{
     root_scr = scr->get_screen();
 }
 
-DisplayInit::~DisplayInit() {
-    if (ui_Screen1 != nullptr) {
-        lvgl_port_lock(0);
-        lv_obj_del(ui_Screen1);
-        lvgl_port_unlock();
-    }
+DisplayInit::~DisplayInit()
+{
+    this->DisplayInit::destroy();
 }
 
-void DisplayInit::init() {
+void DisplayInit::init()
+{
     lvgl_port_lock(0);
 
     ui_Screen1 = lv_obj_create(root_scr);
@@ -42,32 +41,37 @@ void DisplayInit::init() {
     lvgl_port_unlock();
 }
 
-void DisplayInit::destroy() {
-    lvgl_port_lock(0);
-    lv_obj_del(ui_Screen1);
-    lvgl_port_unlock();
+void DisplayInit::destroy()
+{
+    if (ui_Screen1 != nullptr)
+    {
+        lvgl_port_lock(0);
+        lv_obj_del(ui_Screen1);
+        lvgl_port_unlock();
+        ui_Screen1 = nullptr;
+    }
 }
 
-void DisplayInit::set_main_info_text(const char *text) {
+void DisplayInit::set_main_info_text(const char* text)
+{
     lvgl_port_lock(0);
     lv_label_set_text(ui_Label1, text);
     lvgl_port_unlock();
 }
 
 
-DisplayDemo::DisplayDemo(PhysicalDisplay *scr) {
+DisplayDemo::DisplayDemo(PhysicalDisplay* scr)
+{
     root_scr = scr->get_screen();
 }
 
-DisplayDemo::~DisplayDemo() {
-    if (ui_Screen1 != nullptr) {
-        lvgl_port_lock(0);
-        lv_obj_del(ui_Screen1);
-        lvgl_port_unlock();
-    }
+DisplayDemo::~DisplayDemo()
+{
+    this->DisplayDemo::destroy();
 }
 
-void DisplayDemo::init() {
+void DisplayDemo::init()
+{
     lvgl_port_lock(0);
 
     ui_Screen1 = lv_obj_create(root_scr);
@@ -149,29 +153,38 @@ void DisplayDemo::init() {
     lvgl_port_unlock();
 }
 
-void DisplayDemo::destroy() {
-    if (ui_Screen1 != nullptr) {
+void DisplayDemo::destroy()
+{
+    if (ui_Screen1 != nullptr)
+    {
         lvgl_port_lock(0);
         lv_obj_del(ui_Screen1);
         lvgl_port_unlock();
+        ui_Screen1 = nullptr;
     }
 }
 
-void DisplayDemo::show_pointer(bool show) const {
+void DisplayDemo::show_pointer(bool show) const
+{
     lvgl_port_lock(0);
-    if (show) {
+    if (show)
+    {
         lv_obj_clear_flag(ui_nostylearc, LV_OBJ_FLAG_HIDDEN);
-    } else {
+    }
+    else
+    {
         lv_obj_add_flag(ui_nostylearc, LV_OBJ_FLAG_HIDDEN);
     }
     lvgl_port_unlock();
 }
 
-void DisplayDemo::set_pointer_radian(float radian) {
+void DisplayDemo::set_pointer_radian(float radian)
+{
     // radian 为弧度值，将其转换为角度值, radian 可能为负数
-    int degree = (int) (radian * 180 / M_PI);
+    int degree = (int)(radian * 180 / M_PI);
     int display_degree = _positive_fmod(degree, 360);
-    if (display_degree != previous_pointer_output_) {
+    if (display_degree != previous_pointer_output_)
+    {
         lvgl_port_lock(0);
         lv_arc_set_value(ui_nostylearc, display_degree);
         lvgl_port_unlock();
@@ -179,8 +192,10 @@ void DisplayDemo::set_pointer_radian(float radian) {
     }
 }
 
-void DisplayDemo::set_main_info_text(int value) {
-    if (value != previous_main_info_output_) {
+void DisplayDemo::set_main_info_text(int value)
+{
+    if (value != previous_main_info_output_)
+    {
         lvgl_port_lock(0);
         lv_label_set_text_fmt(ui_digitinfo, "%d", value);
         lvgl_port_unlock();
@@ -188,13 +203,15 @@ void DisplayDemo::set_main_info_text(int value) {
     }
 }
 
-void DisplayDemo::set_secondary_info_text(const char *text) {
+void DisplayDemo::set_secondary_info_text(const char* text)
+{
     lvgl_port_lock(0);
     lv_label_set_text(ui_textinfo, text);
     lvgl_port_unlock();
 }
 
-void DisplayDemo::create_clock_ticks_manual(float radius, float length, lv_color_t color) {
+void DisplayDemo::create_clock_ticks_manual(float radius, float length, lv_color_t color)
+{
     ClockLineInfo l_info{};
     lvgl_port_lock(0);
     l_info.line = lv_line_create(ui_Screen1);
@@ -207,11 +224,13 @@ void DisplayDemo::create_clock_ticks_manual(float radius, float length, lv_color
     lvgl_port_unlock();
 }
 
-void DisplayDemo::create_clock_ticks_auto(int number, float length, lv_color_t color) {
+void DisplayDemo::create_clock_ticks_auto(int number, float length, lv_color_t color)
+{
     float radius = 0;
     float step = M_TWOPI / number;
     lvgl_port_lock(0);
-    for (int i = 0; i < number; i++) {
+    for (int i = 0; i < number; i++)
+    {
         ClockLineInfo l_info{};
         l_info.line = lv_line_create(ui_Screen1);
         l_info.line_points = new lv_point_precise_t[2];
@@ -225,17 +244,20 @@ void DisplayDemo::create_clock_ticks_auto(int number, float length, lv_color_t c
     lvgl_port_unlock();
 }
 
-void DisplayDemo::create_clock_ticks_range(int number, float start_rad, float end_rad, float length, lv_color_t color) {
+void DisplayDemo::create_clock_ticks_range(int number, float start_rad, float end_rad, float length, lv_color_t color)
+{
     lvgl_port_lock(0);
 
     // 如果刻度数不合理，则直接返回
-    if (number <= 0) {
+    if (number <= 0)
+    {
         lvgl_port_unlock();
         return;
     }
 
     // 如果只有一个刻度，则只生成一个刻度，位置取 start_radius
-    if (number == 1) {
+    if (number == 1)
+    {
         ClockLineInfo l_info{};
         l_info.line = lv_line_create(ui_Screen1);
         l_info.line_points = new lv_point_precise_t[2];
@@ -243,10 +265,13 @@ void DisplayDemo::create_clock_ticks_range(int number, float start_rad, float en
         l_info.length = length;
         l_info.color = color;
         _add_clock_ticks(&l_info);
-    } else {
+    }
+    else
+    {
         // 计算相邻刻度之间的角度差
         float step = (end_rad - start_rad) / float(number - 1);
-        for (int i = 0; i < number; i++) {
+        for (int i = 0; i < number; i++)
+        {
             ClockLineInfo l_info{};
             l_info.line = lv_line_create(ui_Screen1);
             l_info.line_points = new lv_point_precise_t[2];
@@ -261,31 +286,39 @@ void DisplayDemo::create_clock_ticks_range(int number, float start_rad, float en
     lvgl_port_unlock();
 }
 
-void DisplayDemo::del_clock_ticks() {
+void DisplayDemo::del_clock_ticks()
+{
     lvgl_port_lock(0);
     _del_all_clock_ticks();
     lvgl_port_unlock();
 }
 
-void DisplayDemo::set_pressure_feedback_arc(float target_rad, float current_rad) {
+void DisplayDemo::set_pressure_feedback_arc(float target_rad, float current_rad)
+{
     float pressure_radius = 0;
     int final_target_rad = 270 + int(target_rad * 180 / M_PI);
-    if (final_target_rad != previous_pressure_feedback_arc_target_output_) {
+    if (final_target_rad != previous_pressure_feedback_arc_target_output_)
+    {
         lvgl_port_lock(0);
         lv_arc_set_rotation(pressure_feedback_arc_, final_target_rad);
         lvgl_port_unlock();
         previous_pressure_feedback_arc_target_output_ = final_target_rad;
     }
-    if (current_rad > target_rad) {
-        if (previous_pressure_feedback_arc_direction_output_ != 0) {
+    if (current_rad > target_rad)
+    {
+        if (previous_pressure_feedback_arc_direction_output_ != 0)
+        {
             lvgl_port_lock(0);
             lv_arc_set_mode(pressure_feedback_arc_, LV_ARC_MODE_NORMAL);
             lvgl_port_unlock();
             previous_pressure_feedback_arc_direction_output_ = 0;
         }
         pressure_radius = _positive_fmod(current_rad - target_rad, M_TWOPI);
-    } else {
-        if (previous_pressure_feedback_arc_direction_output_ != 1) {
+    }
+    else
+    {
+        if (previous_pressure_feedback_arc_direction_output_ != 1)
+        {
             lvgl_port_lock(0);
             lv_arc_set_mode(pressure_feedback_arc_, LV_ARC_MODE_REVERSE);
             lvgl_port_unlock();
@@ -294,7 +327,8 @@ void DisplayDemo::set_pressure_feedback_arc(float target_rad, float current_rad)
         pressure_radius = _positive_fmod(target_rad - current_rad, M_TWOPI);
     }
     int final_pressure_radius = int(pressure_radius * 180 / M_PI);
-    if (final_pressure_radius != previous_pressure_feedback_arc_percent_output_) {
+    if (final_pressure_radius != previous_pressure_feedback_arc_percent_output_)
+    {
         lvgl_port_lock(0);
         lv_arc_set_value(pressure_feedback_arc_, final_pressure_radius);
         lvgl_port_unlock();
@@ -302,13 +336,18 @@ void DisplayDemo::set_pressure_feedback_arc(float target_rad, float current_rad)
     }
 }
 
-void DisplayDemo::set_background_board_percent(int percent) {
-    if (percent < 0) {
+void DisplayDemo::set_background_board_percent(int percent)
+{
+    if (percent < 0)
+    {
         percent = 0;
-    } else if (percent > 100) {
+    }
+    else if (percent > 100)
+    {
         percent = 100;
     }
-    if (percent != previous_background_board_percent_output_) {
+    if (percent != previous_background_board_percent_output_)
+    {
         lvgl_port_lock(0);
         lv_obj_set_y(background_board_, SPI_LCD_H_RES - SPI_LCD_H_RES * percent / 100);
         lvgl_port_unlock();
@@ -316,14 +355,16 @@ void DisplayDemo::set_background_board_percent(int percent) {
     }
 }
 
-int DisplayDemo::_positive_fmod(int x, int y) {
+int DisplayDemo::_positive_fmod(int x, int y)
+{
     int mod = std::fmod(x, y);
     return (mod < 0) ? (mod + y) : mod;
 }
 
-void DisplayDemo::_add_clock_ticks(DisplayDemo::ClockLineInfo *l_info) {
+void DisplayDemo::_add_clock_ticks(DisplayDemo::ClockLineInfo* l_info)
+{
     // 需要外部加锁使用
-    float r = (float) SPI_LCD_H_RES / 2;
+    float r = (float)SPI_LCD_H_RES / 2;
 
     // radius 是在某个角度上，画一条直线，直线由外向内延伸长度 length, 求出 (x1, y1) ~ (x2, y2) (仅画一根线)
     // 定义12点方向为 0 弧度，顺时针方向为正，逆时针方向为负
@@ -339,21 +380,25 @@ void DisplayDemo::_add_clock_ticks(DisplayDemo::ClockLineInfo *l_info) {
     clock_lines_.push_back(*l_info);
 }
 
-void DisplayDemo::_del_clock_ticks(DisplayDemo::ClockLineInfo *l_info) {
+void DisplayDemo::_del_clock_ticks(DisplayDemo::ClockLineInfo* l_info)
+{
     lvgl_port_lock(0);
     lv_obj_del(l_info->line);
     delete[] l_info->line_points;
     lvgl_port_unlock();
 }
 
-void DisplayDemo::_del_all_clock_ticks() {
-    for (auto &clock_line: clock_lines_) {
+void DisplayDemo::_del_all_clock_ticks()
+{
+    for (auto& clock_line : clock_lines_)
+    {
         _del_clock_ticks(&clock_line);
     }
     clock_lines_.clear();
 }
 
-float DisplayDemo::_positive_fmod(float a, float b) {
+float DisplayDemo::_positive_fmod(float a, float b)
+{
     float mod = std::fmod(a, b);
     return (mod < 0) ? (mod + b) : mod;
 }

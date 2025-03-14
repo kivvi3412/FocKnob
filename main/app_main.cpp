@@ -79,7 +79,7 @@ extern "C" void app_main() {
         cfg.steps = 1; // 两档
         cfg.start_number = 0; // 对应档位范围: [0,1]
         cfg.useRebound = true; // 开关常见使用回弹
-        cfg.attractorKp = 200.0f;
+        cfg.attractorKp = 250.0f;
         logic_manager->register_mode("LightOnOff",
                                      new GenericKnobMode(rotary_knob, physical_display, cfg));
     }
@@ -108,7 +108,7 @@ extern "C" void app_main() {
         cfg.steps = 1; // 两档
         cfg.start_number = 0;
         cfg.useRebound = true;
-        cfg.attractorKp = 200.0f;
+        cfg.attractorKp = 250.0f;
         logic_manager->register_mode("ACOnOff",
                                      new GenericKnobMode(rotary_knob, physical_display, cfg));
     }
@@ -123,7 +123,7 @@ extern "C" void app_main() {
         cfg.steps = 16; // 让 stepIndex=0..16，共17个取值
         cfg.start_number = 16; // 起始档位16 => [16..32]
         cfg.useRebound = true; // 如果想要吸引子+回弹
-        cfg.attractorKp = 800.0f;
+        cfg.attractorKp = 500.0f;
         logic_manager->register_mode("ACTemperature",
                                      new GenericKnobMode(rotary_knob, physical_display, cfg));
     }
